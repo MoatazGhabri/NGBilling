@@ -1,0 +1,40 @@
+# Backend Development Dockerfile
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Make init script executable
+RUN chmod +x scripts/init-docker.sh
+
+# Create uploads directory
+RUN mkdir -p uploads
+
+# Expose port
+EXPOSE 3001
+
+# Create entrypoint script for development
+RUN echo '#!/bin/bash\n\
+echo "🚀 Starting NGBilling Backend (Development)..."\n\
+\n\
+# Run database initialization in background\n\
+./scripts/init-docker.sh &\n\
+\n\
+# Wait a bit for initialization\n\
+sleep 10\n\
+\n\
+# Start the development server\n\
+exec npm run dev\n\
+' > /app/entrypoint-dev.sh && chmod +x /app/entrypoint-dev.sh
+
+# Start the development server with initialization
+CMD ["/app/entrypoint-dev.sh"] 

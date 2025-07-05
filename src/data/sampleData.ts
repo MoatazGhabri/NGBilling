@@ -1,0 +1,113 @@
+import { Client, Produit, Facture } from '../types';
+
+export const sampleClients: Client[] = [
+  {
+    id: '1',
+    nom: 'Studio Créatif ABC',
+    email: 'contact@studioabc.com',
+    telephone: '+33 1 23 45 67 89',
+    adresse: '123 Rue de la Créativité',
+    ville: 'Paris',
+    codePostal: '75001',
+    pays: 'France',
+    dateCreation: new Date('2024-01-15'),
+    totalFacture: 2500,
+  },
+  {
+    id: '2',
+    nom: 'Entreprise Design XYZ',
+    email: 'hello@designxyz.fr',
+    telephone: '+33 2 34 56 78 90',
+    adresse: '456 Avenue du Design',
+    ville: 'Lyon',
+    codePostal: '69001',
+    pays: 'France',
+    dateCreation: new Date('2024-02-20'),
+    totalFacture: 1800,
+  },
+];
+
+export const sampleProduits: Produit[] = [
+  {
+    id: '1',
+    nom: 'Logo Design',
+    description: 'Création de logo professionnel avec identité visuelle',
+    prix: 850,
+    stock: 10,
+    stockMin: 5,
+    categorie: 'Design',
+    dateCreation: new Date('2024-01-01'),
+    actif: true,
+  },
+  {
+    id: '2',
+    nom: 'Site Web Vitrine',
+    description: 'Développement site web responsive avec CMS',
+    prix: 1200,
+    stock: 3,
+    stockMin: 2,
+    categorie: 'Développement',
+    dateCreation: new Date('2024-01-05'),
+    actif: true,
+  },
+  {
+    id: '3',
+    nom: 'Branding Package',
+    description: 'Package complet identité visuelle + supports',
+    prix: 2500,
+    stock: 1,
+    stockMin: 1,
+    categorie: 'Design',
+    dateCreation: new Date('2024-01-10'),
+    actif: true,
+  },
+];
+
+export const sampleFactures: Facture[] = [
+  {
+    id: '1',
+    numero: 'F-2024-001',
+    clientId: '1',
+    clientNom: 'Studio Créatif ABC',
+    dateCreation: new Date('2024-01-15'),
+    dateEcheance: new Date('2024-02-15'),
+    statut: 'payee',
+    lignes: [
+      {
+        id: '1',
+        produitId: '1',
+        produitNom: 'Logo Design',
+        quantite: 1,
+        prixUnitaire: 850,
+        total: 850,
+      },
+    ],
+    sousTotal: 850,
+    tva: 170,
+    total: 1020,
+    notes: 'Merci pour votre confiance',
+  },
+  {
+    id: '2',
+    numero: 'F-2024-002',
+    clientId: '2',
+    clientNom: 'Entreprise Design XYZ',
+    dateCreation: new Date('2024-02-01'),
+    dateEcheance: new Date('2024-03-01'),
+    statut: 'envoyee',
+    lignes: [
+      {
+        id: '2',
+        produitId: '2',
+        produitNom: 'Site Web Vitrine',
+        quantite: 1,
+        prixUnitaire: 1200,
+        total: 1200,
+      },
+    ],
+    sousTotal: 1200,
+    tva: 240,
+    total: 1440,
+    notes: 'Livraison prévue sous 15 jours',
+  },
+];
