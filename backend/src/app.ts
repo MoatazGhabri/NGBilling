@@ -13,6 +13,7 @@ import factureRoutes from './routes/factures';
 import paiementRoutes from './routes/paiements';
 import devisRoutes from './routes/devis';
 import bonsLivraisonRoutes from './routes/bonsLivraison';
+import settingsRoutes from './routes/settings';
 
 // Load environment variables
 config();
@@ -55,6 +56,7 @@ app.use(`${apiPrefix}/factures`, factureRoutes);
 app.use(`${apiPrefix}/paiements`, paiementRoutes);
 app.use(`${apiPrefix}/devis`, devisRoutes);
 app.use(`${apiPrefix}/bons-livraison`, bonsLivraisonRoutes);
+app.use(`${apiPrefix}/settings`, settingsRoutes);
 
 // 404 handler
 app.use(notFound);

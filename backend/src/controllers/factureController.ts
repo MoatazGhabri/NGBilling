@@ -53,6 +53,13 @@ export class FactureController {
     }
   };
 
+  // Helper to update client's totalFacture
+  private async updateClientTotalFacture(clientId: string) {
+    const factures = await this.factureRepository.find({ where: { clientId } });
+    const total = factures.reduce((sum, f) => sum + (typeof f.total === 'number' ? f.total : 0), 0);
+    await this.clientRepository.update(clientId, { totalFacture: total });
+  }
+
   // Create new invoice
   public createFacture = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -100,6 +107,7 @@ export class FactureController {
       });
 
       await this.factureRepository.save(facture);
+      await this.updateClientTotalFacture(clientId);
 
       res.status(201).json({
         success: true,
@@ -126,6 +134,7 @@ export class FactureController {
 
       Object.assign(facture, updateData);
       await this.factureRepository.save(facture);
+      await this.updateClientTotalFacture(facture.clientId);
 
       res.json({
         success: true,
@@ -150,6 +159,7 @@ export class FactureController {
       }
 
       await this.factureRepository.remove(facture);
+      await this.updateClientTotalFacture(facture.clientId);
 
       res.json({
         success: true,

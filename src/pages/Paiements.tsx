@@ -5,17 +5,20 @@ import { Paiement } from '../types';
 import { Modal } from '../components/UI/Modal';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { PaiementForm } from '../components/Forms/PaiementForm';
+import {
+  usePayments,
+  useCreatePayment,
+  useUpdatePayment,
+  useDeletePayment
+} from '../hooks/useApi';
 
 export const Paiements: React.FC = () => {
-  const { 
-    paiements, 
-    setPaiements, 
-    factures,
-    darkMode, 
-    addActivity, 
-    showNotification 
-  } = useApp();
-  
+  const { factures, darkMode, addActivity, showNotification } = useApp();
+  const { data: paiements = [], isLoading } = usePayments();
+  const createPaymentMutation = useCreatePayment();
+  const updatePaymentMutation = useUpdatePayment();
+  const deletePaymentMutation = useDeletePayment();
+
   const [showModal, setShowModal] = useState(false);
   const [editingPaiement, setEditingPaiement] = useState<Paiement | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; paiementId: string }>({
@@ -23,51 +26,50 @@ export const Paiements: React.FC = () => {
     paiementId: ''
   });
 
-  const handleCreatePaiement = (paiementData: Omit<Paiement, 'id'>) => {
-    const newPaiement: Paiement = {
-      ...paiementData,
-      id: Date.now().toString()
-    };
-    
-    setPaiements(prev => [...prev, newPaiement]);
-    
-    const facture = factures.find(f => f.id === paiementData.factureId);
-    addActivity({
-      type: 'paiement',
-              description: `Paiement de ${paiementData.montant}TND reçu${facture ? ` pour ${facture.numero}` : ''}`
-    });
-    showNotification('success', 'Paiement enregistré avec succès');
-    setShowModal(false);
+  const handleCreatePaiement = async (paiementData: Omit<Paiement, 'id'>) => {
+    try {
+      await createPaymentMutation.mutateAsync(paiementData);
+      const facture = factures.find(f => f.id === paiementData.factureId);
+      addActivity({
+        type: 'paiement',
+        description: `Paiement de ${paiementData.montant}TND reçu${facture ? ` pour ${facture.numero}` : ''}`
+      });
+      showNotification('success', 'Paiement enregistré avec succès');
+      setShowModal(false);
+    } catch {
+      showNotification('error', 'Erreur lors de la création du paiement');
+    }
   };
 
-  const handleEditPaiement = (paiementData: Omit<Paiement, 'id'>) => {
+  const handleEditPaiement = async (paiementData: Omit<Paiement, 'id'>) => {
     if (!editingPaiement) return;
-    
-    const updatedPaiement: Paiement = {
-      ...paiementData,
-      id: editingPaiement.id
-    };
-    
-    setPaiements(prev => prev.map(p => p.id === editingPaiement.id ? updatedPaiement : p));
-    addActivity({
-      type: 'paiement',
-              description: `Paiement de ${paiementData.montant}TND modifié`
-    });
-    showNotification('success', 'Paiement modifié avec succès');
-    setEditingPaiement(null);
-    setShowModal(false);
+    try {
+      await updatePaymentMutation.mutateAsync({ id: editingPaiement.id, payment: paiementData });
+      addActivity({
+        type: 'paiement',
+        description: `Paiement de ${paiementData.montant}TND modifié`
+      });
+      showNotification('success', 'Paiement modifié avec succès');
+      setEditingPaiement(null);
+      setShowModal(false);
+    } catch {
+      showNotification('error', 'Erreur lors de la modification du paiement');
+    }
   };
 
-  const handleDeletePaiement = (id: string) => {
+  const handleDeletePaiement = async (id: string) => {
     const paiement = paiements.find(p => p.id === id);
     if (!paiement) return;
-    
-    setPaiements(prev => prev.filter(p => p.id !== id));
-    addActivity({
-      type: 'paiement',
-              description: `Paiement de ${paiement.montant}TND supprimé`
-    });
-    showNotification('success', 'Paiement supprimé avec succès');
+    try {
+      await deletePaymentMutation.mutateAsync(id);
+      addActivity({
+        type: 'paiement',
+        description: `Paiement de ${paiement.montant}TND supprimé`
+      });
+      showNotification('success', 'Paiement supprimé avec succès');
+    } catch {
+      showNotification('error', 'Erreur lors de la suppression du paiement');
+    }
   };
 
   const openNewPaiementModal = () => {

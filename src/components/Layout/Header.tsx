@@ -4,10 +4,19 @@ import { useApp } from '../../context/AppContext';
 
 interface HeaderProps {
   onLogout: () => void;
+  timer?: number; // seconds
 }
 
-export const Header: React.FC<HeaderProps> = ({ onLogout }) => {
+export const Header: React.FC<HeaderProps> = ({ onLogout, timer }) => {
   const { darkMode } = useApp();
+
+  // Format timer as mm:ss
+  const formatTimer = (seconds?: number) => {
+    if (typeof seconds !== 'number') return '';
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   return (
     <header className={`fixed top-0 left-64 right-0 z-40 ${
@@ -28,6 +37,12 @@ export const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                 } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien focus:border-transparent`}
               />
             </div>
+            {/* Timer display */}
+            {typeof timer === 'number' && (
+              <div className="ml-6 px-3 py-1 rounded bg-orange-sfaxien text-white font-mono font-bold text-lg shadow">
+                Session: {formatTimer(timer)}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">

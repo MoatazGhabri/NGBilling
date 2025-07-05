@@ -313,5 +313,17 @@ export const bonsLivraisonAPI = {
   },
 };
 
+// Settings API methods
+export const settingsAPI = {
+  get: async () => {
+    const response = await apiClient.get('/settings');
+    return response.data;
+  },
+  update: async (data: any) => {
+    const response = await apiClient.put('/settings', data);
+    return response.data;
+  },
+};
+
 // Export the main API client for custom requests
 export default apiClient; 

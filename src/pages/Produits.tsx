@@ -22,8 +22,6 @@ export const Produits: React.FC = () => {
     nom: '',
     description: '',
     prix: '',
-    stock: '',
-    stockMin: '',
     categorie: '',
   });
 
@@ -32,8 +30,6 @@ export const Produits: React.FC = () => {
       nom: '',
       description: '',
       prix: '',
-      stock: '',
-      stockMin: '',
       categorie: '',
     });
   };
@@ -44,8 +40,6 @@ export const Produits: React.FC = () => {
       nom: formData.nom,
       description: formData.description,
       prix: parseFloat(formData.prix),
-      stock: parseInt(formData.stock),
-      stockMin: parseInt(formData.stockMin),
       categorie: formData.categorie,
       actif: true,
     };
@@ -86,8 +80,6 @@ export const Produits: React.FC = () => {
       nom: produit.nom,
       description: produit.description,
       prix: produit.prix.toString(),
-      stock: produit.stock.toString(),
-      stockMin: produit.stockMin.toString(),
       categorie: produit.categorie,
     });
     setEditingProduit(produit);
@@ -107,8 +99,6 @@ export const Produits: React.FC = () => {
       showNotification('error', error?.response?.data?.message || 'Erreur lors de la suppression du produit');
     }
   };
-
-  const lowStockProducts = produits.filter(p => p.stock <= p.stockMin);
 
   return (
     <div className="space-y-6">
@@ -133,24 +123,6 @@ export const Produits: React.FC = () => {
           <span>Nouveau produit</span>
         </button>
       </div>
-
-      {lowStockProducts.length > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-            <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
-              Alertes Stock Faible
-            </h3>
-          </div>
-          <div className="space-y-1">
-            {lowStockProducts.map(produit => (
-              <p key={produit.id} className="text-sm text-yellow-700 dark:text-yellow-300">
-                {produit.nom} : {produit.stock} restant(s) (seuil : {produit.stockMin})
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {produits.map((produit) => (
@@ -202,21 +174,7 @@ export const Produits: React.FC = () => {
                 <span className={`font-medium ${
                   darkMode ? 'text-white' : 'text-bleu-nuit'
                 }`}>
-                                        {typeof produit.prix === 'number' ? produit.prix.toFixed(2) : '0.00'} TND
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  Stock actuel
-                </span>
-                <span className={`font-medium ${
-                  produit.stock <= produit.stockMin ? 'text-red-500' : 
-                  darkMode ? 'text-white' : 'text-bleu-nuit'
-                }`}>
-                  {produit.stock}
+                  {Number(produit.prix).toFixed(3)}{'\u00A0'}TND
                 </span>
               </div>
               
@@ -319,43 +277,9 @@ export const Produits: React.FC = () => {
                 } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
               />
             </div>
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Stock
-              </label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                required
-                className={`w-full px-3 py-2 border rounded-lg ${
-                  darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
-              />
-            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Stock min
-              </label>
-              <input
-                type="number"
-                name="stockMin"
-                value={formData.stockMin}
-                onChange={handleChange}
-                required
-                className={`w-full px-3 py-2 border rounded-lg ${
-                  darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
-              />
-            </div>
             <div>
               <label className={`block text-sm font-medium mb-2 ${
                 darkMode ? 'text-gray-300' : 'text-gray-700'

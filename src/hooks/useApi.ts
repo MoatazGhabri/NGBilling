@@ -8,7 +8,8 @@ import {
   LoginRequest,
   RegisterRequest,
   devisAPI,
-  bonsLivraisonAPI
+  bonsLivraisonAPI,
+  settingsAPI
 } from '../utils/api';
 import { Client, Produit, Facture, Paiement, Devis, BonLivraison } from '../types';
 
@@ -240,6 +241,7 @@ export const useCreateInvoice = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['invoices']);
+        queryClient.invalidateQueries(['clients']);
       },
     }
   );
@@ -255,6 +257,7 @@ export const useUpdateInvoice = () => {
       onSuccess: (_, { id }) => {
         queryClient.invalidateQueries(['invoices']);
         queryClient.invalidateQueries(['invoices', id]);
+        queryClient.invalidateQueries(['clients']);
       },
     }
   );
@@ -268,6 +271,7 @@ export const useDeleteInvoice = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['invoices']);
+        queryClient.invalidateQueries(['clients']);
       },
     }
   );
@@ -485,4 +489,20 @@ export const useDeleteBonLivraison = () => {
       },
     }
   );
+};
+
+// Settings hooks
+export const useSettings = () => {
+  return useQuery(['settings'], () => settingsAPI.get(), {
+    select: (data) => data.data || {},
+  });
+};
+
+export const useUpdateSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation((data: any) => settingsAPI.update(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['settings']);
+    },
+  });
 }; 

@@ -15,6 +15,8 @@ import { Clients } from './pages/Clients';
 import { Rapports } from './pages/Rapports';
 import { Parametres } from './pages/Parametres';
 import { Notification } from './components/UI/Notification';
+import { Modal } from './components/UI/Modal';
+import { useState, useEffect, useRef, MutableRefObject } from 'react';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -26,6 +28,9 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const TEN_MINUTES = 10 * 60; // seconds
+const TIMER_KEY = 'session-timer';
 
 const AppContent: React.FC = () => {
   const { 
@@ -41,7 +46,82 @@ const AppContent: React.FC = () => {
     hideNotification
   } = useApp();
 
-  const { logout } = useAuth();
+  const { logout, user, login } = useAuth();
+
+  // Timer state
+  const [timer, setTimer] = useState(TEN_MINUTES);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Restore timer from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(TIMER_KEY);
+    if (saved && !isNaN(Number(saved))) {
+      setTimer(Number(saved));
+    }
+  }, []);
+
+  // Save timer to localStorage on change
+  useEffect(() => {
+    localStorage.setItem(TIMER_KEY, timer.toString());
+  }, [timer]);
+
+  // Reset timer on user activity
+  useEffect(() => {
+    const resetTimer = () => setTimer(TEN_MINUTES);
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    return () => {
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+    };
+  }, []);
+
+  // Countdown logic
+  useEffect(() => {
+    if (timer <= 0) {
+      setShowPasswordDialog(true);
+      return;
+    }
+    timerRef.current = setTimeout(() => setTimer(t => t - 1), 1000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [timer]);
+
+  // Handle password dialog submit
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await login({ email: user.email, password });
+      setShowPasswordDialog(false);
+      setPassword('');
+      setPasswordError('');
+      setTimer(TEN_MINUTES);
+      localStorage.setItem(TIMER_KEY, TEN_MINUTES.toString());
+    } catch {
+      setPasswordError('Mot de passe incorrect.');
+      setTimeout(() => {
+        setShowPasswordDialog(false);
+        setPassword('');
+        setPasswordError('');
+        localStorage.removeItem(TIMER_KEY);
+        logout();
+      }, 1200);
+    }
+  };
+
+  // Handle dialog cancel (logout)
+  const handleDialogCancel = () => {
+    setShowPasswordDialog(false);
+    setPassword('');
+    setPasswordError('');
+    localStorage.removeItem(TIMER_KEY);
+    logout();
+  };
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -74,7 +154,7 @@ const AppContent: React.FC = () => {
         darkMode ? 'bg-gray-900' : 'bg-blanc-sable'
       } transition-colors duration-200`}>
         <Sidebar />
-        <Header onLogout={logout} />
+        <Header onLogout={logout} timer={timer} />
         <main className="ml-64 pt-20 p-6">
           <div className="max-w-7xl mx-auto">
             {renderCurrentPage()}
@@ -87,6 +167,24 @@ const AppContent: React.FC = () => {
           isVisible={notification.isVisible}
           onClose={hideNotification}
         />
+        <Modal isOpen={showPasswordDialog} onClose={handleDialogCancel} title="Confirmer la session">
+          <form onSubmit={handlePasswordSubmit}>
+            <label className="block mb-2 font-medium">Veuillez entrer votre mot de passe pour continuer :</label>
+            <input
+              type="password"
+              className="w-full px-3 py-2 border rounded-lg mb-2"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoFocus
+              required
+            />
+            {passwordError && <div className="text-red-500 text-sm mb-2">{passwordError}</div>}
+            <div className="flex justify-end space-x-2 mt-4">
+              <button type="button" onClick={handleDialogCancel} className="px-4 py-2 bg-gray-300 rounded">Annuler</button>
+              <button type="submit" className="px-4 py-2 bg-orange-sfaxien text-white rounded">Valider</button>
+            </div>
+          </form>
+        </Modal>
       </div>
     </div>
   );

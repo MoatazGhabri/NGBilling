@@ -16,8 +16,6 @@ export interface Produit {
   nom: string;
   description: string;
   prix: number;
-  stock: number;
-  stockMin: number;
   categorie: string;
   dateCreation: Date;
   actif: boolean;
