@@ -73,21 +73,21 @@ services:
       - ngbilling-network
 
   # Nginx Reverse Proxy (Optional)
-  nginx:
-    image: nginx:alpine
-    container_name: ngbilling-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - ngbilling-network
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: ngbilling-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     - ./ssl:/etc/nginx/ssl
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - ngbilling-network
 
 volumes:
   mysql_data:
