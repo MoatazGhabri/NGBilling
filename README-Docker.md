@@ -120,7 +120,13 @@ docker exec ngbilling-mysql mysqldump -u ngbilling -p ngbilling > backup.sql
 # Restaurer la base de données
 docker exec -i ngbilling-mysql mysql -u ngbilling -p ngbilling < backup.sql
 ```
+### crée un admin
+npm run typeorm migration:generate -- -d src/config/database.ts src/migrations/InitSchema
+npm run typeorm migration:run -- -d src/config/database.ts
 
+mysql -u ngbilling -p -h 127.0.0.1 ngbilling
+# then in the MySQL prompt:
+SHOW TABLES;
 ### Développement
 ```bash
 # Mode développement avec hot reload

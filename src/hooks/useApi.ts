@@ -147,16 +147,6 @@ export const useProduct = (id: string) => {
   );
 };
 
-export const useLowStockProducts = () => {
-  return useQuery(
-    ['products', 'low-stock'],
-    () => productsAPI.getLowStock(),
-    {
-      select: (data) => data.data || [],
-    }
-  );
-};
-
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   

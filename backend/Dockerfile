@@ -1,20 +1,34 @@
 # Backend Dockerfile
 FROM node:18-alpine
 
+# Install Chrome and dependencies for Puppeteer
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Set environment variables for Puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (inclure dev pour npm run dev)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Make init script executable
-RUN chmod +x scripts/init-docker.sh
+# Make init script executable (si besoin)
+RUN chmod +x scripts/init-docker.sh || true
 
 # Create a non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -27,19 +41,5 @@ USER nextjs
 # Expose port
 EXPOSE 3001
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-echo "🚀 Starting NGBilling Backend..."\n\
-\n\
-# Run database initialization in background\n\
-./scripts/init-docker.sh &\n\
-\n\
-# Wait a bit for initialization\n\
-sleep 10\n\
-\n\
-# Start the main application\n\
-exec npm start\n\
-' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
-
-# Start the app with initialization
-CMD ["/app/entrypoint.sh"] 
+# Start the app in dev mode
+CMD ["npm", "run", "dev"] 

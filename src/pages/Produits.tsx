@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Package, AlertTriangle, Edit, Trash2 } from 'lucide-react';
+import { Plus, Package, Edit, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Produit } from '../types';
 import { Modal } from '../components/UI/Modal';
@@ -107,12 +107,12 @@ export const Produits: React.FC = () => {
           <h1 className={`text-2xl font-poppins font-bold ${
             darkMode ? 'text-white' : 'text-bleu-nuit'
           }`}>
-            Produits & Stock
+            Produits
           </h1>
           <p className={`text-sm mt-1 ${
             darkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Gérez vos produits et surveillez votre stock
+            Gérez votre catalogue de produits
           </p>
         </div>
         <button 

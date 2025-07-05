@@ -141,7 +141,7 @@ const AppContent: React.FC = () => {
         return <Clients />;
       case 'rapports':
         return <Rapports />;
-      case 'parametres':
+      case 'settings':
         return <Parametres />;
       default:
         return <Dashboard />;
@@ -193,13 +193,13 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ProtectedRoute>
-          <AppProvider>
+      <AppProvider>
+        <AuthProvider>
+          <ProtectedRoute>
             <AppContent />
-          </AppProvider>
-        </ProtectedRoute>
-      </AuthProvider>
+          </ProtectedRoute>
+        </AuthProvider>
+      </AppProvider>
     </QueryClientProvider>
   );
 }

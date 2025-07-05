@@ -10,20 +10,21 @@ import {
   PieChart, 
   Settings,
   Moon,
-  Sun
+  Sun,
+  Home,
+  TrendingUp
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 const menuItems = [
-  { id: 'dashboard', label: 'Tableau de bord', icon: BarChart3 },
+  { id: 'dashboard', label: 'Tableau de bord', icon: Home },
+  { id: 'clients', label: 'Clients', icon: Users },
+  { id: 'produits', label: 'Produits', icon: Package },
   { id: 'factures', label: 'Factures', icon: FileText },
-  { id: 'devis', label: 'Devis', icon: FileEdit },
+  { id: 'devis', label: 'Devis', icon: TrendingUp },
   { id: 'bons-livraison', label: 'Bons de livraison', icon: Truck },
   { id: 'paiements', label: 'Paiements', icon: CreditCard },
-  { id: 'produits', label: 'Produits / Stock', icon: Package },
-  { id: 'clients', label: 'Clients', icon: Users },
-  { id: 'rapports', label: 'Rapports', icon: PieChart },
-  { id: 'parametres', label: 'Paramètres', icon: Settings },
+  { id: 'settings', label: 'Paramètres', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {

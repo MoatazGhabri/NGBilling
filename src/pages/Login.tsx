@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import { useLogin } from '../hooks/useApi';
 import { LoginRequest } from '../utils/api';
 
 export const Login: React.FC = () => {
   const { login, isLoading } = useAuth();
+  const { setCurrentPage } = useApp();
   const loginMutation = useLogin();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
@@ -35,6 +37,8 @@ export const Login: React.FC = () => {
     try {
       setError('');
       await login(formData);
+      // Rediriger vers le dashboard après connexion réussie
+      setCurrentPage('dashboard');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erreur de connexion');
     }
@@ -87,7 +91,7 @@ export const Login: React.FC = () => {
                   autoComplete="email"
                   required
                   className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-sfaxien focus:border-orange-sfaxien focus:z-10 sm:text-sm transition-colors"
-                  placeholder="admin@ngbilling.com"
+                  placeholder="contact@nathygraph.com"
                   value={formData.email}
                   onChange={handleInputChange}
                 />

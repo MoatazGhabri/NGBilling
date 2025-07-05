@@ -16,8 +16,17 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('ngbilling-token');
+    console.log('🔍 API Request Debug:', {
+      url: config.url,
+      method: config.method,
+      hasToken: !!token,
+      tokenLength: token?.length || 0
+    });
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Token added to request');
+    } else {
+      console.log('❌ No token found in localStorage');
     }
     return config;
   },
@@ -141,11 +150,6 @@ export const productsAPI = {
 
   getById: async (id: string): Promise<ApiResponse<Produit>> => {
     const response = await apiClient.get<ApiResponse<Produit>>(`/produits/${id}`);
-    return response.data;
-  },
-
-  getLowStock: async (): Promise<ApiResponse<Produit[]>> => {
-    const response = await apiClient.get<ApiResponse<Produit[]>>('/produits/low-stock');
     return response.data;
   },
 

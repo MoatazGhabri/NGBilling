@@ -13,7 +13,6 @@ import { useApp } from '../../context/AppContext';
 interface ProductData {
   name: string;
   sales: number;
-  stock: number;
   revenue: number;
 }
 
@@ -22,23 +21,22 @@ export const ProductsChart: React.FC = () => {
 
   // Calculate product sales and revenue
   const generateProductData = (): ProductData[] => {
-    const productStats: { [key: string]: { sales: number; revenue: number; stock: number } } = {};
+    const productStats: { [key: string]: { sales: number; revenue: number } } = {};
     
-    // Initialize with current stock
+    // Initialize with zero values
     produits.forEach(product => {
       productStats[product.id] = {
         sales: 0,
-        revenue: 0,
-        stock: product.stock
+        revenue: 0
       };
     });
 
     // Calculate sales from invoices
     factures.forEach(invoice => {
       invoice.lignes?.forEach(ligne => {
-        if (ligne.produit && productStats[ligne.produit.id]) {
-          productStats[ligne.produit.id].sales += ligne.quantite;
-          productStats[ligne.produit.id].revenue += (ligne.quantite * ligne.prixUnitaire);
+        if (ligne.produitId && productStats[ligne.produitId]) {
+          productStats[ligne.produitId].sales += ligne.quantite;
+          productStats[ligne.produitId].revenue += (ligne.quantite * ligne.prixUnitaire);
         }
       });
     });
@@ -50,7 +48,6 @@ export const ProductsChart: React.FC = () => {
         return {
           name: product?.nom || 'Produit inconnu',
           sales: stats.sales,
-          stock: stats.stock,
           revenue: stats.revenue
         };
       })
@@ -80,11 +77,6 @@ export const ProductsChart: React.FC = () => {
             darkMode ? 'text-green-300' : 'text-green-600'
           }`}>
             Ventes: {payload[1]?.value} unités
-          </p>
-          <p className={`text-sm ${
-            darkMode ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            Stock: {payload[2]?.value} unités
           </p>
         </div>
       );

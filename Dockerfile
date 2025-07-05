@@ -7,20 +7,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the app
-RUN npm run build
-
-# Install serve to run the built app
-RUN npm install -g serve
-
 # Expose port
-EXPOSE 3000
+EXPOSE 5173
 
-# Start the app
-CMD ["serve", "-s", "dist", "-l", "3000"] 
+# Start the app in development mode
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"] 

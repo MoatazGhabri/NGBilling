@@ -18,14 +18,6 @@ export class Produit {
   @Min(0)
   prix!: number;
 
-  @Column({ type: 'int' })
-  @Min(0)
-  stock!: number;
-
-  @Column({ type: 'int', name: 'stock_min' })
-  @Min(0)
-  stockMin!: number;
-
   @Column()
   @IsNotEmpty()
   categorie!: string;

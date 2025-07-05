@@ -88,6 +88,4 @@ export interface Stats {
   facturesEnAttente: number;
   facturesPayees: number;
   clientsActifs: number;
-  produitsEnStock: number;
-  alertesStock: number;
 }

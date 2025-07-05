@@ -60,6 +60,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [darkMode, setDarkMode] = useLocalStorage<boolean>('ngbilling-dark-mode', false);
   const [recentActivities, setRecentActivities] = useLocalStorage<RecentActivity[]>('ngbilling-activities', []);
   
+  // Migration: corriger les anciennes valeurs de currentPage
+  React.useEffect(() => {
+    if (currentPage === 'parametres') {
+      setCurrentPage('settings');
+    }
+  }, [currentPage, setCurrentPage]);
+  
   const [notification, setNotification] = useState<NotificationState>({
     isVisible: false,
     type: 'success',

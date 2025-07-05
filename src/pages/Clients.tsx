@@ -21,7 +21,7 @@ export const Clients: React.FC = () => {
     adresse: '',
     ville: '',
     codePostal: '',
-    pays: 'France',
+    pays: '',
   });
 
   // API hooks
@@ -38,7 +38,7 @@ export const Clients: React.FC = () => {
       adresse: '',
       ville: '',
       codePostal: '',
-      pays: 'France',
+      pays: '',
     });
   };
 

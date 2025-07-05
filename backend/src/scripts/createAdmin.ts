@@ -12,7 +12,7 @@ const createDefaultAdmin = async () => {
 
     // Check if admin already exists
     const existingAdmin = await userRepository.findOne({
-      where: { email: 'admin@ngbilling.com' }
+      where: { email: 'contact@nathygraph.com' }
     });
 
     if (existingAdmin) {

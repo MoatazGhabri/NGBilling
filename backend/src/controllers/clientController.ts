@@ -47,6 +47,36 @@ export class ClientController {
   public createClient = async (req: Request, res: Response): Promise<void> => {
     try {
       const clientData = req.body;
+      
+      // Validation manuelle des champs requis
+      const requiredFields = ['nom', 'email', 'telephone', 'adresse', 'ville', 'codePostal', 'pays'];
+      const missingFields = requiredFields.filter(field => !clientData[field] || clientData[field].trim() === '');
+      
+      if (missingFields.length > 0) {
+        res.status(400).json({ 
+          message: `Champs manquants: ${missingFields.join(', ')}`,
+          missingFields 
+        });
+        return;
+      }
+
+      // Validation de l'email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(clientData.email)) {
+        res.status(400).json({ message: 'Format d\'email invalide' });
+        return;
+      }
+
+      // Vérifier si l'email existe déjà
+      const existingClient = await this.clientRepository.findOne({ 
+        where: { email: clientData.email } 
+      });
+      
+      if (existingClient) {
+        res.status(400).json({ message: 'Un client avec cet email existe déjà' });
+        return;
+      }
+
       const client = this.clientRepository.create(clientData);
       await this.clientRepository.save(client);
 

@@ -47,6 +47,39 @@ export class ProduitController {
   public createProduit = async (req: Request, res: Response): Promise<void> => {
     try {
       const produitData = req.body;
+      
+      // Validation manuelle des champs requis
+      const requiredFields = ['nom', 'prix', 'categorie'];
+      const missingFields = requiredFields.filter(field => {
+        const value = produitData[field];
+        return value === undefined || value === null || value === '' || 
+               (typeof value === 'number' && value < 0);
+      });
+      
+      if (missingFields.length > 0) {
+        res.status(400).json({ 
+          message: `Champs manquants ou invalides: ${missingFields.join(', ')}`,
+          missingFields 
+        });
+        return;
+      }
+
+      // Validation des valeurs numériques
+      if (produitData.prix < 0) {
+        res.status(400).json({ message: 'Le prix doit être positif' });
+        return;
+      }
+
+      // Vérifier si le produit existe déjà (même nom)
+      const existingProduit = await this.produitRepository.findOne({ 
+        where: { nom: produitData.nom } 
+      });
+      
+      if (existingProduit) {
+        res.status(400).json({ message: 'Un produit avec ce nom existe déjà' });
+        return;
+      }
+
       const produit = this.produitRepository.create(produitData);
       await this.produitRepository.save(produit);
 
@@ -107,25 +140,6 @@ export class ProduitController {
     } catch (error) {
       console.error('Delete produit error:', error);
       res.status(500).json({ message: 'Erreur lors de la suppression du produit' });
-    }
-  };
-
-  // Get products with low stock
-  public getProduitsLowStock = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const produits = await this.produitRepository
-        .createQueryBuilder('produit')
-        .where('produit.stock <= produit.stockMin')
-        .andWhere('produit.actif = :actif', { actif: true })
-        .getMany();
-
-      res.json({
-        success: true,
-        data: produits
-      });
-    } catch (error) {
-      console.error('Get produits low stock error:', error);
-      res.status(500).json({ message: 'Erreur lors de la récupération des produits en stock faible' });
     }
   };
 } 
