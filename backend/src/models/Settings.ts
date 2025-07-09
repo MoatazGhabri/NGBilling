@@ -14,7 +14,11 @@ export class Settings {
     company?: {
       name?: string;
       siret?: string;
+      matricule?: string;
       address?: string;
+      telephone?: string;
+      email?: string;
+      rib?: string;
       logo?: string;
     };
     emailConfig?: {

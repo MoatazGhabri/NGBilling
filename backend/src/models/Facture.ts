@@ -75,6 +75,9 @@ export class Facture {
   @UpdateDateColumn({ name: 'date_modification' })
   dateModification!: Date;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  remiseTotale!: number;
+
   // Relations
   @ManyToOne(() => Client, client => client.factures)
   @JoinColumn({ name: 'client_id' })

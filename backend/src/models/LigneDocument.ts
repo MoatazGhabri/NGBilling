@@ -28,6 +28,9 @@ export class LigneDocument {
   @Min(0)
   total!: number;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  remise!: number;
+
   // Relations
   @ManyToOne(() => Produit, produit => produit.lignes)
   @JoinColumn({ name: 'produit_id' })

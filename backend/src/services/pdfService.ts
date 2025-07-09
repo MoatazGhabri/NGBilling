@@ -7,9 +7,8 @@ import { Settings } from '../models/Settings';
 
 export class PDFService {
   private async generatePDF(html: string): Promise<Buffer> {
-    const browser = await puppeteer.launch({
+    const launchOptions: any = {
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -19,7 +18,11 @@ export class PDFService {
         '--no-zygote',
         '--disable-gpu'
       ]
-    });
+    };
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    const browser = await puppeteer.launch(launchOptions);
 
     try {
       const page = await browser.newPage();
@@ -44,9 +47,9 @@ export class PDFService {
 
   private formatCurrency(amount: number): string {
     return new Intl.NumberFormat('fr-TN', {
-      style: 'currency',
-      currency: 'TND',
-      minimumFractionDigits: 3
+      style: 'decimal',
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3
     }).format(amount);
   }
 
@@ -61,7 +64,12 @@ export class PDFService {
   private async getCompanySettings() {
     const repo = AppDataSource.getRepository(Settings);
     const settings = await repo.findOne({ where: {} });
-    return settings?.data?.company || {};
+    const company = settings?.data?.company as any || {};
+    const userProfile = settings?.data?.userProfile || {};
+    if (!company.email && userProfile.email) {
+      company.email = userProfile.email;
+    }
+    return company;
   }
 
   private getBaseStyles(): string {
@@ -73,211 +81,168 @@ export class PDFService {
           box-sizing: border-box;
         }
         body {
-          font-family: 'Arial', 'Helvetica', sans-serif;
-          font-size: 11px;
-          line-height: 1.4;
-          color: #2c3e50;
-          background: #ffffff;
+          font-family: Arial, sans-serif;
+          font-size: 10px;
+          line-height: 1.2;
+          color: #000;
+          background: #fff;
         }
         .document-container {
           max-width: 210mm;
           margin: 0 auto;
-          padding: 0;
+          padding: 10mm;
         }
         .header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 40px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #E38619;
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #000;
+        }
+        .company-section {
+          display: flex;
+          align-items: flex-start;
+          flex: 1;
+        }
+        .company-logo {
+          max-height: 120px;
+          max-width: 300px;
+          margin-right: 20px;
+          object-fit: contain;
         }
         .company-info {
           flex: 1;
         }
-        .company-logo {
-          max-height: 80px;
-          max-width: 200px;
-          margin-bottom: 10px;
-          object-fit: contain;
-        }
         .company-name {
-          font-size: 20px;
-          font-weight: bold;
-          color: #2c3e50;
-          margin-bottom: 5px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+          font-size: 11px;
+          font-weight: normal;
+          color: #666;
+          margin-bottom: 2px;
         }
         .company-details {
-          font-size: 10px;
-          color: #7f8c8d;
+          font-size: 9px;
+          color: #000;
           line-height: 1.3;
         }
-        .document-info {
-          flex: 1;
-          text-align: right;
+        .header-right {
+          text-align: left;
+          font-size: 9px;
+          color: #000;
         }
         .document-title {
-          font-size: 24px;
-          font-weight: bold;
-          color: #2c3e50;
-          margin-bottom: 10px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        .document-number {
           font-size: 14px;
-          color: #E38619;
-          margin-bottom: 5px;
-          font-weight: 600;
-        }
-        .document-date {
-          font-size: 12px;
-          color: #7f8c8d;
-        }
-        .client-section {
-          margin-bottom: 30px;
-        }
-        .section-title {
-          font-size: 12px;
           font-weight: bold;
-          color: #2c3e50;
-          margin-bottom: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 1px solid #E38619;
-          padding-bottom: 3px;
+          color: #000;
+          margin: 20px 0 15px 0;
         }
-        .client-info {
-          background: #f8f9fa;
-          padding: 15px;
-          border-left: 4px solid #E38619;
-        }
-        .client-name {
-          font-size: 12px;
-          font-weight: bold;
-          color: #2c3e50;
-          margin-bottom: 8px;
-        }
-        .client-details {
-          font-size: 10px;
-          color: #7f8c8d;
+        .client-info-box {
+          float: right;
+          width: 200px;
+          border: 1px solid #000;
+          padding: 8px;
+          margin-bottom: 20px;
+          font-size: 9px;
           line-height: 1.4;
+        }
+        .client-info-row {
+          margin-bottom: 3px;
+        }
+        .client-label {
+          font-weight: normal;
+          color: #000;
         }
         .products-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 30px;
-          background: #ffffff;
-          border: 1px solid #bdc3c7;
+          margin-bottom: 20px;
+          clear: both;
+        }
+        .products-table th,
+        .products-table td {
+          border: 1px solid #000;
+          padding: 6px 4px;
+          font-size: 9px;
+          text-align: left;
         }
         .products-table th {
-          background: #E38619;
-          color: #ffffff;
-          padding: 12px 8px;
-          font-size: 10px;
+          background: #f5f5f5;
           font-weight: bold;
-          text-align: left;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .products-table th.text-center {
           text-align: center;
         }
-        .products-table th.text-right {
-          text-align: right;
-        }
-        .products-table td {
-          padding: 10px 8px;
-          border-bottom: 1px solid #ecf0f1;
-          font-size: 10px;
-          vertical-align: top;
-        }
-        .products-table tr:nth-child(even) {
-          background: #f8f9fa;
-        }
-        .products-table tr:last-child td {
-          border-bottom: none;
-        }
-        .text-center {
+        .products-table .text-center {
           text-align: center;
         }
-        .text-right {
+        .products-table .text-right {
           text-align: right;
         }
-        .font-bold {
-          font-weight: bold;
-        }
-        .totals-section {
-          margin-bottom: 30px;
-        }
-        .totals-table {
-          width: 100%;
-          max-width: 300px;
-          margin-left: auto;
-          border-collapse: collapse;
-        }
-        .totals-table td {
-          padding: 8px 12px;
-          font-size: 11px;
-          border-bottom: 1px solid #ecf0f1;
-        }
-        .totals-table tr:last-child td {
-          border-bottom: 2px solid #2c3e50;
-          font-weight: bold;
-          font-size: 12px;
-          color: #2c3e50;
-        }
-        .footer {
+        .footer-section {
           margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #E38619;
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: flex-end;
         }
-        .notes-section {
+        .footer-left {
           flex: 1;
-          margin-right: 20px;
-        }
-        .notes-title {
-          font-size: 10px;
-          font-weight: bold;
-          color: #2c3e50;
-          margin-bottom: 5px;
-          text-transform: uppercase;
-        }
-        .notes-content {
           font-size: 9px;
-          color: #7f8c8d;
-          line-height: 1.4;
+          color: #000;
+          font-weight: bold;
         }
-        .document-footer {
-          text-align: right;
-          font-size: 8px;
-          color: #95a5a6;
+        .totals-box {
+          border: 1px solid #000;
+          padding: 8px;
+          background: #fff;
+          font-size: 9px;
+          min-width: 200px;
+        }
+        .totals-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 3px;
+          padding: 2px 0;
+        }
+        .totals-row.final {
+          border-top: 1px solid #000;
+          margin-top: 5px;
+          padding-top: 5px;
+          font-weight: bold;
         }
         .signature-section {
-          margin-top: 40px;
+          margin-top: 30px;
           display: flex;
           justify-content: space-between;
         }
         .signature-box {
-          width: 200px;
+          width: 150px;
+          height: 80px;
+          border: 1px solid #000;
           text-align: center;
+          padding: 5px;
+          font-size: 9px;
         }
         .signature-label {
-          font-size: 10px;
-          color: #7f8c8d;
-          margin-bottom: 40px;
-          border-bottom: 1px solid #E38619;
-          padding-bottom: 2px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .stamp-area {
+          position: relative;
+          height: 60px;
+        }
+        .company-stamp {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          border: 1px solid #000;
+          padding: 5px;
+          font-size: 7px;
+          text-align: center;
+          background: #fff;
+          transform: rotate(-15deg);
         }
         @media print {
           .document-container {
             margin: 0;
-            padding: 0;
+            padding: 10mm;
           }
           body {
             -webkit-print-color-adjust: exact;
@@ -288,130 +253,202 @@ export class PDFService {
     `;
   }
 
-  private generateHeaderWithCompany(title: string, numero: string, date: Date, company: any): string {
+  private generateHeader(company: any): string {
     return `
       <div class="header">
-        <div class="company-info">
-          ${company.logo ? `<img src="${company.logo}" alt="Logo de l'entreprise" class="company-logo" />` : ''}
-          <div class="company-name">${company.name || 'NOM DE L\'ENTREPRISE'}</div>
-          <div class="company-details">
-            ${company.address ? `${company.address}<br>` : ''}
-            ${company.ville ? `${company.ville}${company.codePostal ? ` ${company.codePostal}` : ''}<br>` : ''}
-            ${company.telephone ? `Tél: ${company.telephone}<br>` : ''}
-            ${company.email ? `Email: ${company.email}<br>` : ''}
-            ${company.matricule ? `Matricule fiscale: ${company.matricule}<br>` : ''}
-            ${company.rc ? `RC: ${company.rc}<br>` : ''}
-          </div>
+        <div class="company-section">
+          ${company.logo ? `<img src="${company.logo}" alt="Logo" class="company-logo" />` : ''}
         </div>
-        <div class="document-info">
-          <div class="document-title">${title}</div>
-          <div class="document-number">N° ${numero}</div>
-          <div class="document-date">Date: ${this.formatDate(date)}</div>
+        <div class="header-right">
+          ${company.address ? `Addresse: ${company.address}<br>` : ''}
+          ${company.telephone ? `Tel: ${company.telephone}<br>` : ''}
+          ${company.email ? `E-Mail: ${company.email}<br>` : ''}
+          ${company.matricule ? `<div class="company-details">MF: ${company.matricule}</div>` : ''}
+          ${company.rib ? `<div class="company-details">RIB: ${company.rib}</div>` : ''}
+          <br>
+          <strong>Date: ${this.formatDate(new Date())}</strong>
         </div>
       </div>
     `;
   }
 
-  private generateClientSection(clientNom: string, clientInfo: any): string {
+  private generateClientInfo(clientNom: string, clientInfo: any): string {
     return `
-      <div class="client-section">
-        <div class="section-title">Informations Client</div>
-        <div class="client-info">
-          <div class="client-name">${clientNom}</div>
-          <div class="client-details">
-            ${clientInfo.adresse ? `${clientInfo.adresse}<br>` : ''}
-            ${clientInfo.ville ? `${clientInfo.ville}${clientInfo.codePostal ? ` ${clientInfo.codePostal}` : ''}<br>` : ''}
-            ${clientInfo.telephone ? `Tél: ${clientInfo.telephone}<br>` : ''}
-            ${clientInfo.email ? `Email: ${clientInfo.email}<br>` : ''}
-            ${clientInfo.matricule ? `Matricule fiscale: ${clientInfo.matricule}<br>` : ''}
-          </div>
+      <div class="client-info-box">
+        <div class="client-info-row">
+          <span class="client-label">Code Client:</span> ${clientInfo.code || 'N/A'}
+        </div>
+        <div class="client-info-row">
+          <span class="client-label">Client:</span> ${clientNom}
+        </div>
+        <div class="client-info-row">
+          <span class="client-label">Adresse:</span> ${clientInfo.adresse || 'N/A'}
+        </div>
+        <div class="client-info-row">
+          <span class="client-label">M.F:</span> ${clientInfo.mf || clientInfo.matricule || 'N/A'}
+        </div>
+        <div class="client-info-row">
+          <span class="client-label">Tel:</span> ${clientInfo.telephone || 'N/A'}
         </div>
       </div>
     `;
   }
 
   private generateProductsTable(lignes: any[]): string {
-    const rows = lignes.map((ligne, index) => `
+    const rows = lignes.map((ligne, idx) => `
       <tr>
-        <td class="text-center">${index + 1}</td>
+        <td class="text-center">${idx + 1}</td>
         <td>${ligne.produitNom}</td>
         <td class="text-center">${ligne.quantite}</td>
         <td class="text-right">${this.formatCurrency(ligne.prixUnitaire)}</td>
-        <td class="text-right font-bold">${this.formatCurrency(ligne.total)}</td>
+        <td class="text-center">${ligne.remise || 0}</td>
+        <td class="text-right">${this.formatCurrency(ligne.total)}</td>
+        <td class="text-right">${this.formatCurrency(ligne.total * 1.19)}</td>
       </tr>
     `).join('');
 
     return `
-      <div class="products-section">
-        <div class="section-title">Articles</div>
-        <table class="products-table">
-          <thead>
-            <tr>
-              <th class="text-center" style="width: 8%;">#</th>
-              <th style="width: 50%;">Description</th>
-              <th class="text-center" style="width: 12%;">Quantité</th>
-              <th class="text-right" style="width: 15%;">Prix Unitaire</th>
-              <th class="text-right" style="width: 15%;">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th style="width: 12%;">Code</th>
+            <th style="width: 35%;">Désignation</th>
+            <th style="width: 8%;">QTE</th>
+            <th style="width: 12%;">P.U. TTC</th>
+            <th style="width: 8%;">Remise %</th>
+            <th style="width: 12%;">Total HT</th>
+            <th style="width: 13%;">Total TTC</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  }
+
+  private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0): string {
+    const totalHT = sousTotal;
+    const remiseMontant = (remiseTotale / 100) * totalHT;
+    const totalRemiseHT = remiseMontant;
+    const totalNetHT = totalHT - totalRemiseHT;
+    const totalTVA = tva;
+    const sousTotalApresRemise = totalNetHT;
+    const netAPayer = totalNetHT + totalTVA;
+
+    return `
+      <div class="totals-box">
+        <div class="totals-row">
+          <span>Total HT</span>
+          <span>${this.formatCurrency(totalHT)}</span>
+        </div>
+        <div class="totals-row">
+          <span>Total Remise HT</span>
+          <span>${this.formatCurrency(totalRemiseHT)}</span>
+        </div>
+        <div class="totals-row">
+          <span>Total Net HT</span>
+          <span>${this.formatCurrency(totalNetHT)}</span>
+        </div>
+        <div class="totals-row">
+          <span>Total TVA</span>
+          <span>${this.formatCurrency(totalTVA)}</span>
+        </div>
+        <div class="totals-row">
+          <span>Remise globale (%)</span>
+          <span>${remiseTotale} %</span>
+        </div>
+        <div class="totals-row">
+          <span>Montant remise</span>
+          <span>${this.formatCurrency(remiseMontant)}</span>
+        </div>
+        <div class="totals-row">
+          <span>Sous-total après remise</span>
+          <span>${this.formatCurrency(sousTotalApresRemise)}</span>
+        </div>
+        <div class="totals-row final">
+          <span>Net à payer:</span>
+          <span>${this.formatCurrency(netAPayer)}</span>
+        </div>
       </div>
     `;
   }
 
-  private generateTotalsSection(sousTotal: number, tva: number, total: number): string {
+  private generatePaymentConditions(): string {
     return `
-      <div class="totals-section">
-        <table class="totals-table">
-          <tr>
-            <td>Sous-total :</td>
-            <td class="text-right">${this.formatCurrency(sousTotal)}</td>
-          </tr>
-          <tr>
-            <td>TVA (20%) :</td>
-            <td class="text-right">${this.formatCurrency(tva)}</td>
-          </tr>
-          <tr>
-            <td>TOTAL :</td>
-            <td class="text-right">${this.formatCurrency(total)}</td>
-          </tr>
-        </table>
+      <div style="margin-top: 18px; font-size: 9px; color: #000;">
+        <strong>Conditions de règlement :</strong><br>
+        Acompte de 50% à la signature du devis<br>
+        30% à la livraison du site (avant mise en ligne)<br>
+        20% solde à la mise en ligne effective
       </div>
     `;
   }
 
-  private generateFooter(notes?: string, includeSignature: boolean = true): string {
+  private generateFooter(notes: string = '', company: any = {}): string {
     return `
-      <div class="footer">
-        <div class="notes-section">
-          ${notes ? `
-            <div class="notes-title">Notes</div>
-            <div class="notes-content">${notes}</div>
-          ` : ''}
-        </div>
-        <div class="document-footer">
-          <div>Généré le ${this.formatDate(new Date())}</div>
-          <div>Page 1 sur 1</div>
+      <div class="footer-section">
+        <div class="footer-left">
+          ${notes ? `Arrêté la somme de ${notes.toLowerCase()}.` : ''}
         </div>
       </div>
-      ${includeSignature ? `
-        <div class="signature-section">
-          <div class="signature-box">
-            <div class="signature-label">Signature autorisée</div>
-          </div>
-          <div class="signature-box">
-            <div class="signature-label">Signature client</div>
-          </div>
+      <div class="signature-section">
+        <div class="signature-box">
+          <div class="signature-label">Signature & Cachet</div>
+          <div class="signature-label">Client</div>
+          <div class="stamp-area"></div>
         </div>
-      ` : ''}
+       
+        <div class="signature-box">
+          <div class="signature-label">Signature & Cachet</div>
+         
+        </div>
+      </div>
     `;
+  }
+
+  private numberToFrenchWords(amount: number): string {
+    const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+    const tens = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingt", "quatre-vingt-dix"];
+    function convert_hundreds(n: number): string {
+      if (n < 20) return units[n] || "";
+      if (n < 100) {
+        if (n % 10 === 0) return tens[Math.floor(n / 10)] || "";
+        if (n < 70 || (n >= 80 && n < 90)) return (tens[Math.floor(n / 10)] || "") + (n % 10 === 1 ? " et " : "-") + (units[n % 10] || "");
+        if (n < 80) return "soixante-" + (units[n % 20] || "");
+        return "quatre-vingt-" + (units[n % 20] || "");
+      }
+      if (n === 100) return "cent";
+      if (n < 200) return "cent " + convert_hundreds(n - 100);
+      return (units[Math.floor(n / 100)] || "") + " cent" + (n % 100 === 0 ? "s" : " ") + (n % 100 ? convert_hundreds(n % 100) : "");
+    }
+    function convert_thousands(n: number): string {
+      if (n < 1000) return convert_hundreds(n);
+      if (n < 2000) return "mille " + convert_hundreds(n % 1000);
+      return convert_hundreds(Math.floor(n / 1000)) + " mille " + (n % 1000 ? convert_hundreds(n % 1000) : "");
+    }
+    const dinars = Math.floor(amount);
+    let millimes = Math.round((amount - dinars) * 1000);
+    // S'assurer que millimes a toujours trois chiffres (ex: 004, 040, 400)
+    let millimesStr = millimes.toString().padStart(3, '0');
+    let words = '';
+    if (dinars === 0) {
+      words = 'zéro dinar';
+    } else if (dinars === 1) {
+      words = 'un dinar';
+    } else {
+      words = convert_thousands(dinars) + ' dinars';
+    }
+    if (millimes > 0) {
+      words += ' ET ' + millimesStr + ' MILLIMES';
+    }
+    return words.toUpperCase();
   }
 
   public async generateDevisPDF(devis: Devis, clientInfo: any): Promise<Buffer> {
     const company = await this.getCompanySettings();
+    const netAPayer = (devis.sousTotal - (devis.sousTotal * (devis.remiseTotale || 0) / 100)) * 1.19;
+    const netAPayerLettres = this.numberToFrenchWords(netAPayer);
     const html = `
       <!DOCTYPE html>
       <html lang="fr">
@@ -423,11 +460,14 @@ export class PDFService {
       </head>
       <body>
         <div class="document-container">
-          ${this.generateHeaderWithCompany('Devis', devis.numero, devis.dateCreation, company)}
-          ${this.generateClientSection(devis.clientNom, clientInfo)}
+          ${this.generateHeader(company)}
+          <div class="document-title">DEVIS N°:${devis.numero}</div>
+          ${this.generateClientInfo(devis.clientNom, clientInfo)}
           ${this.generateProductsTable(devis.lignes)}
-          ${this.generateTotalsSection(devis.sousTotal, devis.tva, devis.total)}
-          ${this.generateFooter(devis.notes)}
+          ${this.generateTotalsSection(devis.sousTotal, devis.tva, devis.total, devis.remiseTotale)}
+          <div style="margin-top: 10px; font-size: 10px; color: #000; font-weight: bold; text-align: right;">Net à payer en lettres : <span style="font-weight: normal;">${netAPayerLettres}</span></div>
+          ${this.generatePaymentConditions()}
+          ${this.generateFooter(devis.notes || '', company || {})}
         </div>
       </body>
       </html>
@@ -448,11 +488,12 @@ export class PDFService {
       </head>
       <body>
         <div class="document-container">
-          ${this.generateHeaderWithCompany('Facture', facture.numero, facture.dateCreation, company)}
-          ${this.generateClientSection(facture.clientNom, clientInfo)}
+          ${this.generateHeader(company)}
+          <div class="document-title">FACTURE N°:${facture.numero}</div>
+          ${this.generateClientInfo(facture.clientNom, clientInfo)}
           ${this.generateProductsTable(facture.lignes)}
-          ${this.generateTotalsSection(facture.sousTotal, facture.tva, facture.total)}
-          ${this.generateFooter(facture.notes)}
+          ${this.generateTotalsSection(facture.sousTotal, facture.tva, facture.total, facture.remiseTotale)}
+          ${this.generateFooter(facture.notes || '', company || {})}
         </div>
       </body>
       </html>
@@ -473,10 +514,28 @@ export class PDFService {
       </head>
       <body>
         <div class="document-container">
-          ${this.generateHeaderWithCompany('Bon de Livraison', bonLivraison.numero, bonLivraison.dateCreation, company)}
-          ${this.generateClientSection(bonLivraison.clientNom, clientInfo)}
+          ${this.generateHeader(company)}
+          <div class="document-title">BON DE LIVRAISON N°:${bonLivraison.numero}</div>
+          ${this.generateClientInfo(bonLivraison.clientNom, clientInfo)}
           ${this.generateProductsTable(bonLivraison.lignes)}
-          ${this.generateFooter(bonLivraison.notes, false)}
+          <div class="footer-section">
+            <div class="footer-left">
+              ${bonLivraison.notes ? `Arrêté la somme de bon de livraison à:<br><strong>${bonLivraison.notes.toUpperCase()}.</strong>` : ''}
+            </div>
+            ${this.generateTotalsSection(0, 0, 0)}
+          </div>
+          <div class="signature-section">
+            <div class="signature-box">
+              <div class="signature-label">Signature & Cachet</div>
+              <div class="signature-label">Client</div>
+              <div class="stamp-area"></div>
+            </div>
+           
+            <div class="signature-box">
+              <div class="signature-label">Signature & Cachet</div>
+            
+            </div>
+          </div>
         </div>
       </body>
       </html>

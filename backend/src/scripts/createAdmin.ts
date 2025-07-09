@@ -24,7 +24,7 @@ const createDefaultAdmin = async () => {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     
     const adminUser = userRepository.create({
-      email: 'admin@ngbilling.com',
+      email: 'contact@nathygraph.com',
       password: hashedPassword,
       nom: 'Administrateur NGBilling',
       telephone: '0123456789',
@@ -35,7 +35,7 @@ const createDefaultAdmin = async () => {
     await userRepository.save(adminUser);
     
     console.log('✅ Default admin user created successfully!');
-    console.log('📧 Email: admin@ngbilling.com');
+    console.log('📧 Email: contact@nathygraph.com');
     console.log('🔑 Password: admin123');
     console.log('⚠️  Please change the password after first login');
 

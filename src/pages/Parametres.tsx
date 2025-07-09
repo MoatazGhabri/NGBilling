@@ -12,7 +12,7 @@ export const Parametres: React.FC = () => {
 
   // Local state for form fields
   const [userProfile, setUserProfile] = useState({ name: '', email: '' });
-  const [company, setCompany] = useState({ name: '', matricule: '', address: '', logo: '' });
+  const [company, setCompany] = useState({ name: '', matricule: '', address: '', logo: '', telephone: '', email: '', rib: '' });
   const [emailConfig, setEmailConfig] = useState({ smtp: '', port: '' });
 
   useEffect(() => {
@@ -26,6 +26,9 @@ export const Parametres: React.FC = () => {
         matricule: settings.company?.matricule || '',
         address: settings.company?.address || '',
         logo: settings.company?.logo || '',
+        telephone: settings.company?.telephone || '',
+        email: settings.company?.email || '',
+        rib: settings.company?.rib || '',
       });
       setEmailConfig({
         smtp: settings.emailConfig?.smtp || '',
@@ -194,6 +197,39 @@ export const Parametres: React.FC = () => {
                   <img src={company.logo} alt="Logo preview" className="h-16 object-contain border rounded bg-white p-2" />
                 </div>
               )}
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Téléphone
+              </label>
+              <input
+                type="text"
+                value={company.telephone}
+                onChange={e => setCompany({ ...company, telephone: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Email entreprise
+              </label>
+              <input
+                type="email"
+                value={company.email}
+                onChange={e => setCompany({ ...company, email: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                RIB
+              </label>
+              <input
+                type="text"
+                value={company.rib}
+                onChange={e => setCompany({ ...company, rib: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+              />
             </div>
           </div>
         </div>

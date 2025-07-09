@@ -40,6 +40,12 @@ export class Client {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalFacture!: number;
 
+  @Column({ unique: true })
+  code!: string;
+
+  @Column({ nullable: true })
+  mf?: string;
+
   @CreateDateColumn()
   dateCreation!: Date;
 

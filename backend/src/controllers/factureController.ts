@@ -82,19 +82,20 @@ export class FactureController {
           res.status(404).json({ message: `Produit ${ligne.produitId} non trouvé` });
           return;
         }
-
-        const total = ligne.quantite * ligne.prixUnitaire;
-        sousTotal += total;
-
+        const remiseLigne = ligne.remise || 0;
+        const totalLigne = ligne.quantite * ligne.prixUnitaire * (1 - remiseLigne / 100);
+        sousTotal += totalLigne;
         processedLignes.push({
           ...ligne,
           produitNom: produit.nom,
-          total
+          total: totalLigne
         });
       }
-
-      const tva = sousTotal * 0.2; // 20% TVA
-      const total = sousTotal + tva;
+      const remiseTotale = factureData.remiseTotale || 0;
+      const remiseMontant = sousTotal * (remiseTotale / 100);
+      const sousTotalApresRemise = sousTotal - remiseMontant;
+      const tva = sousTotalApresRemise * 0.19;
+      const total = sousTotalApresRemise + tva;
 
       const facture = this.factureRepository.create({
         ...factureData,
@@ -103,7 +104,8 @@ export class FactureController {
         sousTotal,
         tva,
         total,
-        lignes: processedLignes
+        lignes: processedLignes,
+        remiseTotale
       });
 
       await this.factureRepository.save(facture);

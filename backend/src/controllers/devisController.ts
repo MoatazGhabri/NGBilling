@@ -69,18 +69,31 @@ export class DevisController {
           return;
         }
 
-        const total = ligne.quantite * ligne.prixUnitaire;
-        sousTotal += total;
+        const remiseLigne = ligne.remise || 0;
+        const totalLigne = ligne.quantite * ligne.prixUnitaire * (1 - remiseLigne / 100);
+        sousTotal += totalLigne;
 
         processedLignes.push({
           ...ligne,
           produitNom: produit.nom,
-          total
+          total: totalLigne
         });
       }
 
-      const tva = sousTotal * 0.2; // 20% TVA
-      const total = sousTotal + tva;
+      const remiseTotale = devisData.remiseTotale || 0;
+      const remiseMontant = sousTotal * (remiseTotale / 100);
+      const sousTotalApresRemise = sousTotal - remiseMontant;
+      const tva = sousTotalApresRemise * 0.19;
+      const total = sousTotalApresRemise + tva;
+
+      // Avant la création du devis
+      let numero = devisData.numero;
+      let exists = await this.devisRepository.findOne({ where: { numero } });
+      while (exists) {
+        numero = `D-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        exists = await this.devisRepository.findOne({ where: { numero } });
+      }
+      devisData.numero = numero;
 
       const devis = this.devisRepository.create({
         ...devisData,
@@ -88,6 +101,7 @@ export class DevisController {
         sousTotal,
         tva,
         total,
+        remiseTotale,
         lignes: processedLignes
       });
 
@@ -128,24 +142,29 @@ export class DevisController {
             return;
           }
 
-          const total = ligne.quantite * ligne.prixUnitaire;
-          sousTotal += total;
+          const remiseLigne = ligne.remise || 0;
+          const totalLigne = ligne.quantite * ligne.prixUnitaire * (1 - remiseLigne / 100);
+          sousTotal += totalLigne;
 
           processedLignes.push({
             ...ligne,
             produitNom: produit.nom,
-            total
+            total: totalLigne
           });
         }
 
-        const tva = sousTotal * 0.2; // 20% TVA
-        const total = sousTotal + tva;
+        const remiseTotale = updateData.remiseTotale || 0;
+        const remiseMontant = sousTotal * (remiseTotale / 100);
+        const sousTotalApresRemise = sousTotal - remiseMontant;
+        const tva = sousTotalApresRemise * 0.19;
+        const total = sousTotalApresRemise + tva;
 
         Object.assign(devis, {
           ...updateData,
           sousTotal,
           tva,
           total,
+          remiseTotale,
           lignes: processedLignes
         });
       } else {

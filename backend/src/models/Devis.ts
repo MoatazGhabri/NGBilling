@@ -71,6 +71,9 @@ export class Devis {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  remiseTotale!: number;
+
   @UpdateDateColumn({ name: 'date_modification' })
   dateModification!: Date;
 

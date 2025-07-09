@@ -77,6 +77,16 @@ export class ClientController {
         return;
       }
 
+      // Génération du code client unique
+      let code;
+      let exists = true;
+      while (exists) {
+        code = `CLT-${Math.floor(100000 + Math.random() * 900000)}`;
+        const existing = await this.clientRepository.findOne({ where: { code } });
+        exists = !!existing;
+      }
+      clientData.code = code;
+
       const client = this.clientRepository.create(clientData);
       await this.clientRepository.save(client);
 

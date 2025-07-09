@@ -27,6 +27,7 @@ export interface LigneDocument {
   produitNom: string;
   quantite: number;
   prixUnitaire: number;
+  remise?: number;
   total: number;
 }
 
@@ -43,6 +44,7 @@ export interface Facture {
   tva: number;
   total: number;
   notes: string;
+  remiseTotale?: number;
 }
 
 export interface Devis {
@@ -58,6 +60,7 @@ export interface Devis {
   tva: number;
   total: number;
   notes: string;
+  remiseTotale?: number;
 }
 
 export interface BonLivraison {

@@ -40,6 +40,7 @@ services:
       DB_DATABASE: ngbilling
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 3001
+      CORS_ORIGIN: "*"
     ports:
       - "3001:3001"
     depends_on:
@@ -64,7 +65,7 @@ services:
     container_name: ngbilling-frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3001/api/v1
+      VITE_API_URL: http://31.97.177.87:3001/api/v1
     ports:
       - "5173:5173"
     depends_on:
