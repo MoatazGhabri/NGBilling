@@ -23,6 +23,7 @@ export const Clients: React.FC = () => {
     codePostal: '',
     pays: '',
   });
+  const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
   // API hooks
   const { data: clients = [], isLoading, error } = useClients();
@@ -40,11 +41,12 @@ export const Clients: React.FC = () => {
       codePostal: '',
       pays: '',
     });
+    setBackendErrors([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setBackendErrors([]);
     try {
       if (editingClient) {
         await updateClientMutation.mutateAsync({
@@ -81,11 +83,18 @@ export const Clients: React.FC = () => {
         });
         showNotification('success', 'Client créé avec succès');
       }
-      
       resetForm();
       setEditingClient(null);
       setShowModal(false);
-    } catch (error) {
+    } catch (error: any) {
+      // Gestion des erreurs détaillées du backend
+      if (error?.response?.data?.errors) {
+        setBackendErrors(error.response.data.errors.map((err: any) => err.msg));
+      } else if (error?.response?.data?.message) {
+        setBackendErrors([error.response.data.message]);
+      } else {
+        setBackendErrors(["Erreur lors de l'opération"]);
+      }
       showNotification('error', 'Erreur lors de l\'opération');
     }
   };
@@ -313,6 +322,13 @@ export const Clients: React.FC = () => {
         title={editingClient ? 'Modifier le client' : 'Nouveau client'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          {backendErrors.length > 0 && (
+            <div className="bg-red-100 text-red-700 p-2 rounded mb-2">
+              {backendErrors.map((err, idx) => (
+                <div key={idx}>{err}</div>
+              ))}
+            </div>
+          )}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
               darkMode ? 'text-gray-300' : 'text-gray-700'
@@ -360,6 +376,7 @@ export const Clients: React.FC = () => {
                 name="telephone"
                 value={formData.telephone}
                 onChange={handleChange}
+                required
                 className={`w-full px-3 py-2 border rounded-lg ${
                   darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
                 } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
@@ -378,6 +395,7 @@ export const Clients: React.FC = () => {
               name="adresse"
               value={formData.adresse}
               onChange={handleChange}
+              required
               className={`w-full px-3 py-2 border rounded-lg ${
                 darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
               } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
@@ -396,6 +414,7 @@ export const Clients: React.FC = () => {
                 name="codePostal"
                 value={formData.codePostal}
                 onChange={handleChange}
+                required
                 className={`w-full px-3 py-2 border rounded-lg ${
                   darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
                 } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
@@ -412,11 +431,29 @@ export const Clients: React.FC = () => {
                 name="ville"
                 value={formData.ville}
                 onChange={handleChange}
+                required
                 className={`w-full px-3 py-2 border rounded-lg ${
                   darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
                 } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
               />
             </div>
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Pays
+            </label>
+            <input
+              type="text"
+              name="pays"
+              value={formData.pays}
+              onChange={handleChange}
+              required
+              className={`w-full px-3 py-2 border rounded-lg ${
+                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+              } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+            />
           </div>
           
           <div className="flex space-x-4">

@@ -16,6 +16,9 @@ export class LigneDocument {
   @Column({ name: 'produit_nom' })
   produitNom!: string;
 
+  @Column({ name: 'produit_description', nullable: true })
+  produitDescription?: string;
+
   @Column({ type: 'int' })
   @Min(1)
   quantite!: number;
@@ -36,15 +39,15 @@ export class LigneDocument {
   @JoinColumn({ name: 'produit_id' })
   produit!: Produit;
 
-  @ManyToOne(() => Facture, facture => facture.lignes, { nullable: true })
+  @ManyToOne(() => Facture, facture => facture.lignes, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'facture_id' })
   facture?: Facture;
 
-  @ManyToOne(() => Devis, devis => devis.lignes, { nullable: true })
+  @ManyToOne(() => Devis, devis => devis.lignes, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'devis_id' })
   devis?: Devis;
 
-  @ManyToOne(() => BonLivraison, bonLivraison => bonLivraison.lignes, { nullable: true })
+  @ManyToOne(() => BonLivraison, bonLivraison => bonLivraison.lignes, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bon_livraison_id' })
   bonLivraison?: BonLivraison;
 } 

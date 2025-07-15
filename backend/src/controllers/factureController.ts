@@ -88,6 +88,7 @@ export class FactureController {
         processedLignes.push({
           ...ligne,
           produitNom: produit.nom,
+          produitDescription: produit.description,
           total: totalLigne
         });
       }

@@ -32,6 +32,6 @@ export class Produit {
   dateModification!: Date;
 
   // Relations
-  @OneToMany(() => LigneDocument, ligne => ligne.produit)
+  @OneToMany(() => LigneDocument, ligne => ligne.produit, { onDelete: 'CASCADE' })
   lignes!: LigneDocument[];
 } 

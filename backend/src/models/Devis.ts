@@ -78,7 +78,7 @@ export class Devis {
   dateModification!: Date;
 
   // Relations
-  @ManyToOne(() => Client, client => client.devis)
+  @ManyToOne(() => Client, client => client.devis, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client!: Client;
 

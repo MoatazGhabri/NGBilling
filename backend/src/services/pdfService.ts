@@ -31,10 +31,10 @@ export class PDFService {
       const pdf = await page.pdf({
         format: 'A4',
         margin: {
-          top: '15mm',
-          right: '15mm',
-          bottom: '15mm',
-          left: '15mm'
+          top: '10mm',
+          right: '12mm',
+          bottom: '12mm',
+          left: '12mm'
         },
         printBackground: true
       });
@@ -46,11 +46,12 @@ export class PDFService {
   }
 
   private formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-TN', {
-      style: 'decimal',
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
-    }).format(amount);
+    // Gestion robuste des nombres avec 3 décimales
+    if (isNaN(amount) || !isFinite(amount)) {
+      return '0,000';
+    }
+    // Toujours 3 décimales, séparateur virgule, pas d'espace
+    return amount.toFixed(3).replace('.', ',');
   }
 
   private formatDate(date: Date): string {
@@ -82,22 +83,27 @@ export class PDFService {
         }
         body {
           font-family: Arial, sans-serif;
-          font-size: 10px;
-          line-height: 1.2;
+          font-size: 9px;
+          line-height: 1.1;
           color: #000;
           background: #fff;
+          min-height: 100vh;
+          position: relative;
         }
         .document-container {
           max-width: 210mm;
           margin: 0 auto;
-          padding: 10mm;
+          padding: 6mm 8mm 8mm 8mm;
+          min-height: 100vh;
+          position: relative;
+          padding-bottom: 120px;
         }
         .header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 15px;
-          padding-bottom: 10px;
+          margin-bottom: 8px;
+          padding-bottom: 6px;
           border-bottom: 1px solid #000;
         }
         .company-section {
@@ -106,47 +112,47 @@ export class PDFService {
           flex: 1;
         }
         .company-logo {
-          max-height: 120px;
-          max-width: 300px;
-          margin-right: 20px;
+          max-height: 80px;
+          max-width: 200px;
+          margin-right: 12px;
           object-fit: contain;
         }
         .company-info {
           flex: 1;
         }
         .company-name {
-          font-size: 11px;
+          font-size: 9px;
           font-weight: normal;
           color: #666;
-          margin-bottom: 2px;
+          margin-bottom: 1px;
         }
         .company-details {
-          font-size: 9px;
+          font-size: 7px;
           color: #000;
-          line-height: 1.3;
+          line-height: 1.1;
         }
         .header-right {
           text-align: left;
-          font-size: 9px;
+          font-size: 7px;
           color: #000;
         }
         .document-title {
-          font-size: 14px;
+          font-size: 12px;
           font-weight: bold;
           color: #000;
-          margin: 20px 0 15px 0;
+          margin: 10px 0 8px 0;
         }
         .client-info-box {
           float: right;
-          width: 200px;
+          width: 160px;
           border: 1px solid #000;
-          padding: 8px;
-          margin-bottom: 20px;
-          font-size: 9px;
-          line-height: 1.4;
+          padding: 5px;
+          margin-bottom: 10px;
+          font-size: 7px;
+          line-height: 1.2;
         }
         .client-info-row {
-          margin-bottom: 3px;
+          margin-bottom: 1px;
         }
         .client-label {
           font-weight: normal;
@@ -155,14 +161,14 @@ export class PDFService {
         .products-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
           clear: both;
         }
         .products-table th,
         .products-table td {
           border: 1px solid #000;
-          padding: 6px 4px;
-          font-size: 9px;
+          padding: 3px 2px;
+          font-size: 7px;
           text-align: left;
         }
         .products-table th {
@@ -177,76 +183,100 @@ export class PDFService {
           text-align: right;
         }
         .footer-section {
-          margin-top: 40px;
+          position: fixed;
+          bottom: 12mm;
+          left: 8mm;
+          right: 8mm;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
+          background: #fff;
+          z-index: 100;
         }
         .footer-left {
           flex: 1;
-          font-size: 9px;
+          font-size: 8px;
           color: #000;
           font-weight: bold;
         }
         .totals-box {
           border: 1px solid #000;
-          padding: 8px;
+          padding: 6px;
           background: #fff;
-          font-size: 9px;
-          min-width: 200px;
+          font-size: 8px;
+          width: 150px;
+          position: fixed;
+          bottom: 180px;
+          right: 8mm;
+          z-index: 100;
         }
         .totals-row {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 3px;
-          padding: 2px 0;
+          margin-bottom: 2px;
         }
         .totals-row.final {
-          border-top: 1px solid #000;
-          margin-top: 5px;
-          padding-top: 5px;
           font-weight: bold;
+          border-top: 1px solid #000;
+          padding-top: 3px;
+          margin-top: 3px;
         }
         .signature-section {
-          margin-top: 30px;
+          position: fixed;
+          bottom: 12mm;
+          left: 8mm;
+          right: 8mm;
           display: flex;
           justify-content: space-between;
+          background: #fff;
+          z-index: 100;
         }
         .signature-box {
-          width: 150px;
-          height: 80px;
+          width: 45%;
           border: 1px solid #000;
+          padding: 8px;
           text-align: center;
-          padding: 5px;
-          font-size: 9px;
+          font-size: 8px;
         }
         .signature-label {
+          margin-bottom: 15px;
           font-weight: bold;
-          margin-bottom: 5px;
         }
         .stamp-area {
-          position: relative;
-          height: 60px;
+          height: 40px;
+          border: 1px dashed #ccc;
+          margin-top: 10px;
         }
-        .company-stamp {
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          border: 1px solid #000;
-          padding: 5px;
-          font-size: 7px;
-          text-align: center;
+        .net-a-payer {
+          position: fixed;
+          right: 8mm;
+          width: 250px;
+          bottom: 150px;
+          text-align: right;
+          font-size: 9px;
+          color: #000;
+          font-weight: bold;
           background: #fff;
-          transform: rotate(-15deg);
+          z-index: 100;
+          margin-bottom: 0;
+        }
+        .payment-conditions {
+          position: fixed;
+          bottom: 12mm;
+          left: 8mm;
+          right: 8mm;
+          font-size: 8px;
+          color: #000;
+          background: #fff;
+          z-index: 100;
+          margin-bottom: 240px;
         }
         @media print {
-          .document-container {
-            margin: 0;
-            padding: 10mm;
-          }
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+          .footer-section,
+          .signature-section,
+          .net-a-payer,
+          .payment-conditions {
+            position: fixed;
           }
         }
       </style>
@@ -298,12 +328,15 @@ export class PDFService {
     const rows = lignes.map((ligne, idx) => `
       <tr>
         <td class="text-center">${idx + 1}</td>
-        <td>${ligne.produitNom}</td>
-        <td class="text-center">${ligne.quantite}</td>
-        <td class="text-right">${this.formatCurrency(ligne.prixUnitaire)}</td>
-        <td class="text-center">${ligne.remise || 0}</td>
-        <td class="text-right">${this.formatCurrency(ligne.total)}</td>
-        <td class="text-right">${this.formatCurrency(ligne.total * 1.19)}</td>
+        <td>
+          <div style="font-weight: bold; font-size: 10px;">${ligne.produitNom}</div>
+          ${ligne.produitDescription ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">${ligne.produitDescription}</div>` : ''}
+        </td>
+        <td class="text-center" style="font-size: 8px;">${ligne.quantite}</td>
+        <td class="text-right" style="font-size: 8px;">${this.formatCurrency(Number(ligne.prixUnitaire) || 0)}</td>
+        <td class="text-center" style="font-size: 8px;">${ligne.remise || 0}</td>
+        <td class="text-right" style="font-size: 8px;">${this.formatCurrency(Number(ligne.total) || 0)}</td>
+        <td class="text-right" style="font-size: 8px;">${this.formatCurrency((Number(ligne.total) || 0) * 1.19)}</td>
       </tr>
     `).join('');
 
@@ -328,11 +361,11 @@ export class PDFService {
   }
 
   private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0): string {
-    const totalHT = sousTotal;
-    const remiseMontant = (remiseTotale / 100) * totalHT;
+    const totalHT = Number(sousTotal) || 0;
+    const remiseMontant = (Number(remiseTotale) / 100) * totalHT;
     const totalRemiseHT = remiseMontant;
     const totalNetHT = totalHT - totalRemiseHT;
-    const totalTVA = tva;
+    const totalTVA = Number(tva) || 0;
     const sousTotalApresRemise = totalNetHT;
     const netAPayer = totalNetHT + totalTVA;
 
@@ -376,7 +409,7 @@ export class PDFService {
 
   private generatePaymentConditions(): string {
     return `
-      <div style="margin-top: 18px; font-size: 9px; color: #000;">
+      <div class="payment-conditions">
         <strong>Conditions de règlement :</strong><br>
         Acompte de 50% à la signature du devis<br>
         30% à la livraison du site (avant mise en ligne)<br>
@@ -407,7 +440,7 @@ export class PDFService {
     `;
   }
 
-  private numberToFrenchWords(amount: number): string {
+  private numberToFrenchWords(amountStr: string): string {
     const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
     const tens = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingt", "quatre-vingt-dix"];
     function convert_hundreds(n: number): string {
@@ -427,10 +460,11 @@ export class PDFService {
       if (n < 2000) return "mille " + convert_hundreds(n % 1000);
       return convert_hundreds(Math.floor(n / 1000)) + " mille " + (n % 1000 ? convert_hundreds(n % 1000) : "");
     }
-    const dinars = Math.floor(amount);
-    let millimes = Math.round((amount - dinars) * 1000);
-    // S'assurer que millimes a toujours trois chiffres (ex: 004, 040, 400)
-    let millimesStr = millimes.toString().padStart(3, '0');
+    // amountStr est du type "169,220"
+    const [dinarsStr, millimesStrRaw] = amountStr.split(',');
+    const dinars = parseInt((dinarsStr || '').replace(/\s/g, ''), 10);
+    const millimes = parseInt(((millimesStrRaw ?? '') + '000').slice(0, 3), 10);
+
     let words = '';
     if (dinars === 0) {
       words = 'zéro dinar';
@@ -440,39 +474,50 @@ export class PDFService {
       words = convert_thousands(dinars) + ' dinars';
     }
     if (millimes > 0) {
-      words += ' ET ' + millimesStr + ' MILLIMES';
+      words += ' ET ' + millimes.toString().padStart(3, '0') + ' MILLIMES';
     }
     return words.toUpperCase();
   }
 
   public async generateDevisPDF(devis: Devis, clientInfo: any): Promise<Buffer> {
-    const company = await this.getCompanySettings();
-    const netAPayer = (devis.sousTotal - (devis.sousTotal * (devis.remiseTotale || 0) / 100)) * 1.19;
-    const netAPayerLettres = this.numberToFrenchWords(netAPayer);
-    const html = `
-      <!DOCTYPE html>
-      <html lang="fr">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Devis ${devis.numero}</title>
-        ${this.getBaseStyles()}
-      </head>
-      <body>
-        <div class="document-container">
-          ${this.generateHeader(company)}
-          <div class="document-title">DEVIS N°:${devis.numero}</div>
-          ${this.generateClientInfo(devis.clientNom, clientInfo)}
-          ${this.generateProductsTable(devis.lignes)}
-          ${this.generateTotalsSection(devis.sousTotal, devis.tva, devis.total, devis.remiseTotale)}
-          <div style="margin-top: 10px; font-size: 10px; color: #000; font-weight: bold; text-align: right;">Net à payer en lettres : <span style="font-weight: normal;">${netAPayerLettres}</span></div>
-          ${this.generatePaymentConditions()}
-          ${this.generateFooter(devis.notes || '', company || {})}
-        </div>
-      </body>
-      </html>
-    `;
-    return this.generatePDF(html);
+    try {
+      const company = await this.getCompanySettings();
+      const netAPayer = (devis.sousTotal - (devis.sousTotal * (devis.remiseTotale || 0) / 100)) * 1.19;
+      const netAPayerStr = this.formatCurrency(netAPayer); // Utilise la même valeur que l'affichage
+      const netAPayerLettres = this.numberToFrenchWords(netAPayerStr);
+      const html = `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Devis ${devis.numero}</title>
+          ${this.getBaseStyles()}
+        </head>
+        <body>
+          <div class="document-container">
+            ${this.generateHeader(company)}
+            <div class="document-title">DEVIS N°:${devis.numero}</div>
+            ${this.generateClientInfo(devis.clientNom, clientInfo)}
+            ${this.generateProductsTable(devis.lignes)}
+            ${this.generateTotalsSection(devis.sousTotal, devis.tva, devis.total, devis.remiseTotale)}
+            <div class="net-a-payer">Net à payer en lettres : <span style="font-weight: normal;">${netAPayerLettres}</span></div>
+            ${this.generatePaymentConditions()}
+            <div class="footer-section">
+              <div class="footer-left">
+                ${devis.notes ? `Arrêté la somme de ${devis.notes.toLowerCase()}.` : ''}
+              </div>
+            </div>
+            ${this.generateFooter(devis.notes || '', company || {})}
+          </div>
+        </body>
+        </html>
+      `;
+      return this.generatePDF(html);
+    } catch (error) {
+      console.error('Error generating devis PDF:', error);
+      throw new Error('Erreur lors de la génération du PDF du devis');
+    }
   }
 
   public async generateFacturePDF(facture: Facture, clientInfo: any): Promise<Buffer> {
@@ -493,6 +538,11 @@ export class PDFService {
           ${this.generateClientInfo(facture.clientNom, clientInfo)}
           ${this.generateProductsTable(facture.lignes)}
           ${this.generateTotalsSection(facture.sousTotal, facture.tva, facture.total, facture.remiseTotale)}
+          <div class="footer-section">
+            <div class="footer-left">
+              ${facture.notes ? `Arrêté la somme de ${facture.notes.toLowerCase()}.` : ''}
+            </div>
+          </div>
           ${this.generateFooter(facture.notes || '', company || {})}
         </div>
       </body>
@@ -509,7 +559,7 @@ export class PDFService {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Bon de Livraison ${bonLivraison.numero}</title>
+        <title>Bon de livraison ${bonLivraison.numero}</title>
         ${this.getBaseStyles()}
       </head>
       <body>
@@ -522,20 +572,8 @@ export class PDFService {
             <div class="footer-left">
               ${bonLivraison.notes ? `Arrêté la somme de bon de livraison à:<br><strong>${bonLivraison.notes.toUpperCase()}.</strong>` : ''}
             </div>
-            ${this.generateTotalsSection(0, 0, 0)}
           </div>
-          <div class="signature-section">
-            <div class="signature-box">
-              <div class="signature-label">Signature & Cachet</div>
-              <div class="signature-label">Client</div>
-              <div class="stamp-area"></div>
-            </div>
-           
-            <div class="signature-box">
-              <div class="signature-label">Signature & Cachet</div>
-            
-            </div>
-          </div>
+          ${this.generateFooter(bonLivraison.notes || '', company || {})}
         </div>
       </body>
       </html>

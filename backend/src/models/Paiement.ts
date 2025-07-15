@@ -41,7 +41,7 @@ export class Paiement {
   dateModification!: Date;
 
   // Relations
-  @ManyToOne(() => Facture, facture => facture.paiements)
+  @ManyToOne(() => Facture, facture => facture.paiements, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'facture_id' })
   facture!: Facture;
 } 

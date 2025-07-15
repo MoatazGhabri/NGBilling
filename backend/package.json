@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typeorm": "typeorm-ts-node-commonjs",
-    "create-admin": "ts-node src/scripts/createAdmin.ts"
+    "create-admin": "ts-node src/scripts/createAdmin.ts",
+    "update-cascade": "ts-node src/scripts/update-cascade-delete.ts",
+    "add-description": "ts-node src/scripts/add-produit-description.ts"
   },
   "keywords": [
     "express",

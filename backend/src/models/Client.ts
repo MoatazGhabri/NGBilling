@@ -53,12 +53,12 @@ export class Client {
   dateModification!: Date;
 
   // Relations
-  @OneToMany(() => Facture, facture => facture.client)
+  @OneToMany(() => Facture, facture => facture.client, { onDelete: 'CASCADE' })
   factures!: Facture[];
 
-  @OneToMany(() => Devis, devis => devis.client)
+  @OneToMany(() => Devis, devis => devis.client, { onDelete: 'CASCADE' })
   devis!: Devis[];
 
-  @OneToMany(() => BonLivraison, bonLivraison => bonLivraison.client)
+  @OneToMany(() => BonLivraison, bonLivraison => bonLivraison.client, { onDelete: 'CASCADE' })
   bonsLivraison!: BonLivraison[];
 } 

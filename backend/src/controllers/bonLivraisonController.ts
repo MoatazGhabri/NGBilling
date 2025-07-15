@@ -78,6 +78,7 @@ export class BonLivraisonController {
         processedLignes.push({
           ...ligne,
           produitNom: produit.nom,
+          produitDescription: produit.description,
           total: ligne.quantite * ligne.prixUnitaire
         });
       }
@@ -128,6 +129,7 @@ export class BonLivraisonController {
           processedLignes.push({
             ...ligne,
             produitNom: produit.nom,
+            produitDescription: produit.description,
             total: ligne.quantite * ligne.prixUnitaire
           });
         }

@@ -76,6 +76,7 @@ export class DevisController {
         processedLignes.push({
           ...ligne,
           produitNom: produit.nom,
+          produitDescription: produit.description,
           total: totalLigne
         });
       }
@@ -149,6 +150,7 @@ export class DevisController {
           processedLignes.push({
             ...ligne,
             produitNom: produit.nom,
+            produitDescription: produit.description,
             total: totalLigne
           });
         }
@@ -211,6 +213,8 @@ export class DevisController {
   public generatePDF = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      console.log('Generating PDF for devis ID:', id);
+      
       const devis = await this.devisRepository.findOne({ 
         where: { id: id as string },
         relations: ['client', 'lignes']
@@ -227,6 +231,7 @@ export class DevisController {
         return;
       }
 
+      console.log('Generating PDF for devis:', devis.numero);
       const pdfBuffer = await this.pdfService.generateDevisPDF(devis, client);
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -234,7 +239,10 @@ export class DevisController {
       res.send(pdfBuffer);
     } catch (error) {
       console.error('Generate PDF error:', error);
-      res.status(500).json({ message: 'Erreur lors de la génération du PDF' });
+      res.status(500).json({ 
+        message: 'Erreur lors de la génération du PDF',
+        error: error instanceof Error ? error.message : 'Erreur inconnue'
+      });
     }
   };
 } 

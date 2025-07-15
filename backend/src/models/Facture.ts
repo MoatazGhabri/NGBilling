@@ -79,7 +79,7 @@ export class Facture {
   remiseTotale!: number;
 
   // Relations
-  @ManyToOne(() => Client, client => client.factures)
+  @ManyToOne(() => Client, client => client.factures, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client!: Client;
 
