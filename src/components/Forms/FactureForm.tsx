@@ -15,6 +15,7 @@ export const FactureForm: React.FC<FactureFormProps> = ({
   onCancel,
   initialData
 }) => {
+  const [appliquerTVA, setAppliquerTVA] = useState(initialData?.appliquerTVA ?? true);
   // Recalculate ligne totals on initial load (edit mode)
   React.useEffect(() => {
     if (initialData && initialData.lignes) {
@@ -99,8 +100,10 @@ export const FactureForm: React.FC<FactureFormProps> = ({
       newLignes[index].remise = typeof parsedValue === 'number' ? parsedValue : parseFloat(parsedValue as string) || 0;
     }
 
-    const remiseLigne = newLignes[index].remise || 0;
-    newLignes[index].total = (typeof newLignes[index].quantite === 'number' ? newLignes[index].quantite : 0) * (typeof newLignes[index].prixUnitaire === 'number' ? newLignes[index].prixUnitaire : 0) * (1 - remiseLigne / 100);
+    const quantite = Number(newLignes[index].quantite) || 0;
+    const prixUnitaire = Number(newLignes[index].prixUnitaire) || 0;
+    const remiseLigne = Number(newLignes[index].remise) || 0;
+    newLignes[index].total = quantite * prixUnitaire * (1 - remiseLigne / 100);
 
     console.log('Lignes after change:', newLignes);
     setLignes(newLignes);
@@ -126,7 +129,7 @@ export const FactureForm: React.FC<FactureFormProps> = ({
   const sousTotal = lignes.reduce((sum, ligne) => sum + ligne.total, 0);
   const remiseMontant = sousTotal * (remiseTotale / 100);
   const sousTotalApresRemise = sousTotal - remiseMontant;
-  const tva = sousTotalApresRemise * 0.19;
+  const tva = appliquerTVA ? sousTotalApresRemise * 0.19 : 0;
   const total = sousTotalApresRemise + tva;
   console.log('Rendering FactureForm:', { lignes, sousTotal, tva, total });
 
@@ -148,6 +151,7 @@ export const FactureForm: React.FC<FactureFormProps> = ({
       total,
       notes: formData.notes,
       remiseTotale,
+      appliquerTVA
     });
   };
 
@@ -406,6 +410,14 @@ export const FactureForm: React.FC<FactureFormProps> = ({
             <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Remise totale :</span>
             <span className={darkMode ? 'text-white' : 'text-bleu-nuit'}>{typeof remiseMontant === 'number' ? remiseMontant.toFixed(2) : '0.00'} TND</span>
           </div>
+          {appliquerTVA && (
+            <div className={`flex justify-between text-lg font-bold pt-2 border-t ${
+              darkMode ? 'border-gray-600 text-white' : 'border-gray-200 text-bleu-nuit'
+            }`}>
+              <span>TVA (19%) :</span>
+              <span className={darkMode ? 'text-white' : 'text-bleu-nuit'}>{typeof tva === 'number' ? tva.toFixed(2) : '0.00'} TND</span>
+            </div>
+          )}
           <div className={`flex justify-between text-lg font-bold pt-2 border-t ${
             darkMode ? 'border-gray-600 text-white' : 'border-gray-200 text-bleu-nuit'
           }`}>
@@ -414,7 +426,17 @@ export const FactureForm: React.FC<FactureFormProps> = ({
           </div>
         </div>
       </div>
-
+      <div>
+        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>TVA</label>
+        <select
+          value={appliquerTVA ? 'oui' : 'non'}
+          onChange={e => setAppliquerTVA(e.target.value === 'oui')}
+          className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+        >
+          <option value="oui">Intégrer TVA (19%)</option>
+          <option value="non">Sans TVA</option>
+        </select>
+      </div>
       <div>
         <label className={`block text-sm font-medium mb-2 ${
           darkMode ? 'text-gray-300' : 'text-gray-700'
@@ -432,6 +454,8 @@ export const FactureForm: React.FC<FactureFormProps> = ({
           placeholder="Notes ou conditions particulières..."
         />
       </div>
+
+    
 
       <div>
         <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Remise globale (%)</label>
@@ -457,6 +481,7 @@ export const FactureForm: React.FC<FactureFormProps> = ({
         >
           Annuler
         </button>
+
         <button
           type="submit"
           className="flex-1 py-2 px-4 bg-orange-sfaxien text-white rounded-lg hover:bg-orange-600 transition-colors"

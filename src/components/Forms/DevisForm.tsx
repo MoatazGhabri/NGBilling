@@ -15,6 +15,7 @@ export const DevisForm: React.FC<DevisFormProps> = ({
   onCancel,
   initialData
 }) => {
+  const [appliquerTVA, setAppliquerTVA] = useState(initialData?.appliquerTVA ?? true);
   const { darkMode } = useApp();
   const { data: clients = [], isLoading: clientsLoading } = useClients();
   const { data: produits = [], isLoading: productsLoading } = useProducts();
@@ -97,8 +98,10 @@ export const DevisForm: React.FC<DevisFormProps> = ({
       newLignes[index].remise = typeof parsedValue === 'number' ? parsedValue : parseFloat(parsedValue as string) || 0;
     }
 
-    const remiseLigne = newLignes[index].remise || 0;
-    newLignes[index].total = (typeof newLignes[index].quantite === 'number' ? newLignes[index].quantite : 0) * (typeof newLignes[index].prixUnitaire === 'number' ? newLignes[index].prixUnitaire : 0) * (1 - remiseLigne / 100);
+    const quantite = Number(newLignes[index].quantite) || 0;
+    const prixUnitaire = Number(newLignes[index].prixUnitaire) || 0;
+    const remiseLigne = Number(newLignes[index].remise) || 0;
+    newLignes[index].total = quantite * prixUnitaire * (1 - remiseLigne / 100);
 
     setLignes(newLignes);
   };
@@ -124,7 +127,7 @@ export const DevisForm: React.FC<DevisFormProps> = ({
   const remise = Number(remiseTotale) || 0;
   const remiseMontant = sousTotal * (remise / 100);
   const sousTotalApresRemise = sousTotal - remiseMontant;
-  const tva = sousTotalApresRemise * 0.19;
+  const tva = appliquerTVA ? sousTotalApresRemise * 0.19 : 0;
   const total = sousTotalApresRemise + tva;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -145,7 +148,8 @@ export const DevisForm: React.FC<DevisFormProps> = ({
       total,
       notes: formData.notes,
       remiseTotale,
-      conditionsReglement: formData.conditionsReglement
+      conditionsReglement: formData.conditionsReglement,
+      appliquerTVA
     });
   };
 
@@ -410,12 +414,14 @@ export const DevisForm: React.FC<DevisFormProps> = ({
             <span>Sous-total après remise :</span>
             <span>{typeof sousTotalApresRemise === 'number' ? sousTotalApresRemise.toFixed(2) : '0.00'} TND</span>
           </div>
-          <div className={`flex justify-between text-lg font-bold pt-2 border-t ${
-            darkMode ? 'border-gray-600 text-white' : 'border-gray-200 text-bleu-nuit'
-          }`}>
-            <span>TVA (19%) :</span>
-            <span className={darkMode ? 'text-white' : 'text-bleu-nuit'}>{typeof tva === 'number' ? tva.toFixed(2) : '0.00'} TND</span>
-          </div>
+          {appliquerTVA && (
+            <div className={`flex justify-between text-lg font-bold pt-2 border-t ${
+              darkMode ? 'border-gray-600 text-white' : 'border-gray-200 text-bleu-nuit'
+            }`}>
+              <span>TVA (19%) :</span>
+              <span className={darkMode ? 'text-white' : 'text-bleu-nuit'}>{typeof tva === 'number' ? tva.toFixed(2) : '0.00'} TND</span>
+            </div>
+          )}
           <div className={`flex justify-between text-lg font-bold pt-2 border-t ${
             darkMode ? 'border-gray-600 text-white' : 'border-gray-200 text-bleu-nuit'
           }`}>
@@ -450,6 +456,18 @@ export const DevisForm: React.FC<DevisFormProps> = ({
             <>Acompte de 70% à la signature du devis, 30% à la livraison du site</>
           )}
         </div>
+      </div>
+
+      <div>
+        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>TVA</label>
+        <select
+          value={appliquerTVA ? 'oui' : 'non'}
+          onChange={e => setAppliquerTVA(e.target.value === 'oui')}
+          className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+        >
+          <option value="oui">Intégrer TVA (19%)</option>
+          <option value="non">Sans TVA</option>
+        </select>
       </div>
 
       <div>
@@ -494,6 +512,7 @@ export const DevisForm: React.FC<DevisFormProps> = ({
         >
           Annuler
         </button>
+
         <button
           type="submit"
           className="flex-1 py-2 px-4 bg-orange-sfaxien text-white rounded-lg hover:bg-orange-600 transition-colors"

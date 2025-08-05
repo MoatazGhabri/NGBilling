@@ -336,7 +336,6 @@ export class PDFService {
         <td class="text-right" style="font-size: 8px;">${this.formatCurrency(Number(ligne.prixUnitaire) || 0)}</td>
         <td class="text-center" style="font-size: 8px;">${ligne.remise || 0}</td>
         <td class="text-right" style="font-size: 8px;">${this.formatCurrency(Number(ligne.total) || 0)}</td>
-        <td class="text-right" style="font-size: 8px;">${this.formatCurrency((Number(ligne.total) || 0) * 1.19)}</td>
       </tr>
     `).join('');
 
@@ -350,7 +349,6 @@ export class PDFService {
             <th style="width: 12%;">P.U. TTC</th>
             <th style="width: 8%;">Remise %</th>
             <th style="width: 12%;">Total HT</th>
-            <th style="width: 13%;">Total TTC</th>
           </tr>
         </thead>
         <tbody>
@@ -360,17 +358,20 @@ export class PDFService {
     `;
   }
 
-  private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0, lignes: any[] = []): string {
-    // If lignes are present, sum all remise values
-    let calculatedRemise = remiseTotale;
+  private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0, lignes: any[] = [], appliquerTVA: boolean = true): string {
+    // Calculate totalRemise as (sum of PU * Qte) - (sum of ligne.total)
+    let totalPUxQte = 0;
+    let totalHT = 0;
     if (lignes && lignes.length > 0) {
-      calculatedRemise = lignes.reduce((acc, ligne) => acc + (Number(ligne.remise) || 0), 0);
+      totalPUxQte = lignes.reduce((acc, ligne) => acc + (Number(ligne.prixUnitaire) * Number(ligne.quantite)), 0);
+      totalHT = lignes.reduce((acc, ligne) => acc + (Number(ligne.total) || 0), 0);
+    } else {
+      totalHT = Number(sousTotal) || 0;
     }
-    const totalHT = Number(sousTotal) || 0;
-    const remise = Number(calculatedRemise) || 0;
-    const remiseMontant = (remise / 100) * totalHT;
-    const totalNetHT = totalHT - remiseMontant;
-    const totalTVA = Number(tva) || 0;
+    const totalRemise = totalPUxQte - totalHT;
+    const totalNetHT = totalHT;
+    // TVA is always calculated on Total HT (after remise)
+    const totalTVA = appliquerTVA ? totalHT * 0.19 : 0;
     const netAPayer = totalNetHT + totalTVA;
 
     return `
@@ -380,17 +381,17 @@ export class PDFService {
           <span>${this.formatCurrency(totalHT)}</span>
         </div>
         <div class="totals-row">
-          <span>Totale remise (%)</span>
-          <span>${remise.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</span>
+          <span>Totale remise</span>
+          <span>${this.formatCurrency(totalRemise)}</span>
         </div>
         <div class="totals-row">
           <span>Total Net HT</span>
           <span>${this.formatCurrency(totalNetHT)}</span>
         </div>
-        <div class="totals-row">
+        ${appliquerTVA ? `<div class="totals-row">
           <span>Total TVA</span>
           <span>${this.formatCurrency(totalTVA)}</span>
-        </div>
+        </div>` : ''}
         <div class="totals-row final">
           <span>Net à payer:</span>
           <span>${this.formatCurrency(netAPayer)}</span>
@@ -478,7 +479,7 @@ export class PDFService {
   public async generateDevisPDF(devis: Devis, clientInfo: any): Promise<Buffer> {
     try {
       const company = await this.getCompanySettings();
-      const netAPayer = (devis.sousTotal - (devis.sousTotal * (devis.remiseTotale || 0) / 100)) * 1.19;
+      const netAPayer = (devis.sousTotal - (devis.sousTotal * (devis.remiseTotale || 0) / 100)) * (devis.appliquerTVA !== false ? 1.19 : 1);
       const netAPayerStr = this.formatCurrency(netAPayer); // Utilise la même valeur que l'affichage
       const netAPayerLettres = this.numberToFrenchWords(netAPayerStr);
       const html = `
@@ -497,12 +498,13 @@ export class PDFService {
             ${this.generateClientInfo(devis.clientNom, clientInfo)}
             ${this.generateProductsTable(devis.lignes)}
             ${this.generateTotalsSection(
-      devis.sousTotal,
-      devis.tva,
-      devis.total,
-      devis.remiseTotale,
-      devis.lignes
-    )}
+    devis.sousTotal,
+    devis.tva,
+    devis.total,
+    devis.remiseTotale,
+    devis.lignes,
+    devis.appliquerTVA !== false
+  )}
             <div class="net-a-payer">Net à payer en lettres : <span style="font-weight: normal;">${netAPayerLettres}</span></div>
             ${this.generatePaymentConditions(devis.conditionsReglement)}
             <div class="footer-section">
@@ -539,7 +541,7 @@ export class PDFService {
           <div class="document-title">FACTURE N°:${facture.numero}</div>
           ${this.generateClientInfo(facture.clientNom, clientInfo)}
           ${this.generateProductsTable(facture.lignes)}
-          ${this.generateTotalsSection(facture.sousTotal, facture.tva, facture.total, facture.remiseTotale)}
+          ${this.generateTotalsSection(facture.sousTotal, facture.tva, facture.total, facture.remiseTotale, facture.lignes, facture.appliquerTVA !== false)}
           <div class="footer-section">
             <div class="footer-left">
               ${facture.notes ? `Arrêté la somme de ${facture.notes.toLowerCase()}.` : ''}

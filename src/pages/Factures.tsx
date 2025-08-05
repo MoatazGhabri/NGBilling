@@ -279,7 +279,9 @@ export const Factures: React.FC = () => {
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                       darkMode ? 'text-white' : 'text-bleu-nuit'
                     }`}>
-                      {Number(facture.total).toFixed(2)} TND
+                      {(facture.appliquerTVA === false
+  ? (Number(facture.sousTotal) - Number(facture.remiseTotale || 0)).toFixed(2)
+  : Number(facture.total).toFixed(2))} TND
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(facture.statut)}`}>

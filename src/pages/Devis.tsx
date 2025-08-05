@@ -237,7 +237,9 @@ export const Devis: React.FC = () => {
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                       darkMode ? 'text-white' : 'text-bleu-nuit'
                     }`}>
-                      {Number(devisItem.total).toFixed(2)} TND
+                      {(devisItem.appliquerTVA === false
+  ? (Number(devisItem.sousTotal) - Number(devisItem.remiseTotale || 0)).toFixed(2)
+  : Number(devisItem.total).toFixed(2))} TND
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(devisItem.statut)}`}>

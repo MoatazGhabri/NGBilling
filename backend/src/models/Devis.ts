@@ -5,6 +5,8 @@ import { LigneDocument } from './LigneDocument';
 
 @Entity('devis')
 export class Devis {
+  @Column({ type: 'boolean', default: true })
+  appliquerTVA!: boolean;
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

@@ -32,6 +32,7 @@ export interface LigneDocument {
 }
 
 export interface Facture {
+  appliquerTVA?: boolean;
   id: string;
   numero: string;
   clientId: string;
@@ -48,6 +49,7 @@ export interface Facture {
 }
 
 export interface Devis {
+  appliquerTVA?: boolean;
   id: string;
   numero: string;
   clientId: string;

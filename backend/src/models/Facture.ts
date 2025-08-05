@@ -6,6 +6,8 @@ import { Paiement } from './Paiement';
 
 @Entity('factures')
 export class Facture {
+  @Column({ type: 'boolean', default: true })
+  appliquerTVA!: boolean;
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
