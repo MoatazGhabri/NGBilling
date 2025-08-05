@@ -74,6 +74,14 @@ export class Devis {
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   remiseTotale!: number;
 
+  @Column({
+    type: 'enum',
+    enum: ['acompte50', 'acompte70'],
+    default: 'acompte50',
+    name: 'conditions_reglement'
+  })
+  conditionsReglement!: 'acompte50' | 'acompte70';
+
   @UpdateDateColumn({ name: 'date_modification' })
   dateModification!: Date;
 

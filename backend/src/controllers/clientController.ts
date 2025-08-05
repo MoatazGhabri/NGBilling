@@ -77,15 +77,19 @@ export class ClientController {
         return;
       }
 
-      // Génération du code client unique
-      let code;
-      let exists = true;
-      while (exists) {
-        code = `CLT-${Math.floor(100000 + Math.random() * 900000)}`;
-        const existing = await this.clientRepository.findOne({ where: { code } });
-        exists = !!existing;
-      }
-      clientData.code = code;
+      // Génération du code client auto-incrémenté (5 chiffres)
+      const lastClient = await this.clientRepository.find({
+        order: { code: 'DESC' },
+        take: 1
+      });
+      let nextNumber = 1;
+      if (
+  lastClient.length > 0 &&
+  /^\d{5}$/.test(lastClient[0]?.code ?? '')
+) {
+  nextNumber = parseInt(lastClient[0]!.code, 10) + 1;
+}
+      clientData.code = 'CLT-' + nextNumber.toString().padStart(5, '0');
 
       const client = this.clientRepository.create(clientData);
       await this.clientRepository.save(client);

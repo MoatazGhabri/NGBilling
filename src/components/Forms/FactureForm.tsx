@@ -15,6 +15,21 @@ export const FactureForm: React.FC<FactureFormProps> = ({
   onCancel,
   initialData
 }) => {
+  // Recalculate ligne totals on initial load (edit mode)
+  React.useEffect(() => {
+    if (initialData && initialData.lignes) {
+      const recalculated = initialData.lignes.map(ligne => {
+        const quantite = typeof ligne.quantite === 'number' ? ligne.quantite : parseFloat(String(ligne.quantite)) || 0;
+        const prixUnitaire = typeof ligne.prixUnitaire === 'number' ? ligne.prixUnitaire : parseFloat(String(ligne.prixUnitaire)) || 0;
+        const remise = typeof ligne.remise === 'number' ? ligne.remise : parseFloat(String(ligne.remise)) || 0;
+        return {
+          ...ligne,
+          total: quantite * prixUnitaire * (1 - remise / 100)
+        };
+      });
+      setLignes(recalculated);
+    }
+  }, [initialData]);
   const { darkMode } = useApp();
   const { data: clients = [], isLoading: clientsLoading } = useClients();
   const { data: produits = [], isLoading: productsLoading } = useProducts();
@@ -274,7 +289,22 @@ export const FactureForm: React.FC<FactureFormProps> = ({
               darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'
             }`}>
               <div className="grid grid-cols-12 gap-3 items-end">
-                <div className="col-span-4">
+  <div className="col-span-1 flex items-center justify-center h-full">
+    <button
+      type="button"
+      onClick={() => removeLigne(index)}
+      disabled={lignes.length === 1}
+      className={`p-1 rounded transition-colors ${
+        lignes.length === 1 
+          ? 'text-gray-400 cursor-not-allowed' 
+          : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+      }`}
+      style={{ marginTop: '1.5rem' }}
+    >
+      <Trash2 className="w-4 h-4 mx-auto" />
+    </button>
+  </div>
+                <div className="col-span-3">
                   <label className={`block text-xs font-medium mb-1 ${
                     darkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
@@ -357,20 +387,7 @@ export const FactureForm: React.FC<FactureFormProps> = ({
                     } focus:outline-none focus:ring-1 focus:ring-orange-sfaxien`}
                   />
                 </div>
-                <div className="col-span-2">
-                  <button
-                    type="button"
-                    onClick={() => removeLigne(index)}
-                    disabled={lignes.length === 1}
-                    className={`w-full p-1 rounded transition-colors ${
-                      lignes.length === 1 
-                        ? 'text-gray-400 cursor-not-allowed' 
-                        : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    }`}
-                  >
-                    <Trash2 className="w-4 h-4 mx-auto" />
-                  </button>
-                </div>
+                
               </div>
             </div>
           ))}

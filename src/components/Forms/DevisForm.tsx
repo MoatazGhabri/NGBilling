@@ -24,18 +24,29 @@ export const DevisForm: React.FC<DevisFormProps> = ({
     dateCreation: initialData?.dateCreation ? new Date(initialData.dateCreation).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     dateExpiration: initialData?.dateExpiration ? new Date(initialData.dateExpiration).toISOString().split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     statut: initialData?.statut || 'brouillon' as const,
-    notes: initialData?.notes || ''
+    notes: initialData?.notes || '',
+    conditionsReglement: initialData?.conditionsReglement || 'acompte50',
   });
 
   const [lignes, setLignes] = useState<LigneDocument[]>(
-    initialData?.lignes || [{
-      id: '1',
-      produitId: '',
-      produitNom: '',
-      quantite: 1,
-      prixUnitaire: 0,
-      total: 0
-    }]
+    initialData?.lignes
+      ? initialData.lignes.map(ligne => {
+          const quantite = Number(ligne.quantite) || 0;
+          const prixUnitaire = Number(ligne.prixUnitaire) || 0;
+          const remiseLigne = Number(ligne.remise) || 0;
+          return {
+            ...ligne,
+            total: quantite * prixUnitaire * (1 - remiseLigne / 100)
+          };
+        })
+      : [{
+          id: '1',
+          produitId: '',
+          produitNom: '',
+          quantite: 1,
+          prixUnitaire: 0,
+          total: 0
+        }]
   );
 
   const [remiseTotale, setRemiseTotale] = useState(initialData?.remiseTotale || 0);
@@ -109,8 +120,9 @@ export const DevisForm: React.FC<DevisFormProps> = ({
     }
   };
 
-  const sousTotal = lignes.reduce((sum, ligne) => sum + ligne.total, 0);
-  const remiseMontant = sousTotal * (remiseTotale / 100);
+  const sousTotal = lignes.reduce((sum, ligne) => sum + (Number(ligne.total) || 0), 0);
+  const remise = Number(remiseTotale) || 0;
+  const remiseMontant = sousTotal * (remise / 100);
   const sousTotalApresRemise = sousTotal - remiseMontant;
   const tva = sousTotalApresRemise * 0.19;
   const total = sousTotalApresRemise + tva;
@@ -132,7 +144,8 @@ export const DevisForm: React.FC<DevisFormProps> = ({
       tva,
       total,
       notes: formData.notes,
-      remiseTotale
+      remiseTotale,
+      conditionsReglement: formData.conditionsReglement
     });
   };
 
@@ -274,7 +287,22 @@ export const DevisForm: React.FC<DevisFormProps> = ({
               darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'
             }`}>
               <div className="grid grid-cols-12 gap-3 items-end">
-                <div className="col-span-4">
+  <div className="col-span-1 flex items-center justify-center h-full">
+    <button
+      type="button"
+      onClick={() => removeLigne(index)}
+      disabled={lignes.length === 1}
+      className={`p-1 rounded transition-colors ${
+        lignes.length === 1 
+          ? 'text-gray-400 cursor-not-allowed' 
+          : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+      }`}
+      style={{ marginTop: '1.5rem' }}
+    >
+      <Trash2 className="w-4 h-4 mx-auto" />
+    </button>
+  </div>
+                <div className="col-span-3">
                   <label className={`block text-xs font-medium mb-1 ${
                     darkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
@@ -357,20 +385,7 @@ export const DevisForm: React.FC<DevisFormProps> = ({
                     } focus:outline-none focus:ring-1 focus:ring-orange-sfaxien`}
                   />
                 </div>
-                <div className="col-span-2">
-                  <button
-                    type="button"
-                    onClick={() => removeLigne(index)}
-                    disabled={lignes.length === 1}
-                    className={`w-full p-1 rounded transition-colors ${
-                      lignes.length === 1 
-                        ? 'text-gray-400 cursor-not-allowed' 
-                        : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    }`}
-                  >
-                    <Trash2 className="w-4 h-4 mx-auto" />
-                  </button>
-                </div>
+                
               </div>
             </div>
           ))}
@@ -407,6 +422,33 @@ export const DevisForm: React.FC<DevisFormProps> = ({
             <span>Total :</span>
             <span>{typeof total === 'number' ? total.toFixed(2) : '0.00'} TND</span>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label className={`block text-sm font-medium mb-2 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>
+          Conditions de règlement
+        </label>
+        <select
+          name="conditionsReglement"
+          value={formData.conditionsReglement}
+          onChange={handleChange}
+          className={`w-full px-3 py-2 border rounded-lg ${
+            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+          } focus:outline-none focus:ring-2 focus:ring-orange-sfaxien`}
+        >
+          <option value="acompte50">Acompte 50% / 30% / 20%</option>
+          <option value="acompte70">Acompte 70% / 30%</option>
+        </select>
+        <div className="mt-2 text-xs text-gray-500">
+          {formData.conditionsReglement === "acompte50" && (
+            <>Acompte de 50% à la signature du devis, 30% à la livraison du site (avant mise en ligne), 20% solde à la mise en ligne effective</>
+          )}
+          {formData.conditionsReglement === "acompte70" && (
+            <>Acompte de 70% à la signature du devis, 30% à la livraison du site</>
+          )}
         </div>
       </div>
 

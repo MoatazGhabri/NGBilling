@@ -61,6 +61,7 @@ export interface Devis {
   total: number;
   notes: string;
   remiseTotale?: number;
+  conditionsReglement: 'acompte50' | 'acompte70';
 }
 
 export interface BonLivraison {

@@ -360,13 +360,17 @@ export class PDFService {
     `;
   }
 
-  private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0): string {
+  private generateTotalsSection(sousTotal: number, tva: number, total: number, remiseTotale: number = 0, lignes: any[] = []): string {
+    // If lignes are present, sum all remise values
+    let calculatedRemise = remiseTotale;
+    if (lignes && lignes.length > 0) {
+      calculatedRemise = lignes.reduce((acc, ligne) => acc + (Number(ligne.remise) || 0), 0);
+    }
     const totalHT = Number(sousTotal) || 0;
-    const remiseMontant = (Number(remiseTotale) / 100) * totalHT;
-    const totalRemiseHT = remiseMontant;
-    const totalNetHT = totalHT - totalRemiseHT;
+    const remise = Number(calculatedRemise) || 0;
+    const remiseMontant = (remise / 100) * totalHT;
+    const totalNetHT = totalHT - remiseMontant;
     const totalTVA = Number(tva) || 0;
-    const sousTotalApresRemise = totalNetHT;
     const netAPayer = totalNetHT + totalTVA;
 
     return `
@@ -376,8 +380,8 @@ export class PDFService {
           <span>${this.formatCurrency(totalHT)}</span>
         </div>
         <div class="totals-row">
-          <span>Total Remise HT</span>
-          <span>${this.formatCurrency(totalRemiseHT)}</span>
+          <span>Totale remise (%)</span>
+          <span>${remise.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</span>
         </div>
         <div class="totals-row">
           <span>Total Net HT</span>
@@ -387,18 +391,6 @@ export class PDFService {
           <span>Total TVA</span>
           <span>${this.formatCurrency(totalTVA)}</span>
         </div>
-        <div class="totals-row">
-          <span>Remise globale (%)</span>
-          <span>${remiseTotale} %</span>
-        </div>
-        <div class="totals-row">
-          <span>Montant remise</span>
-          <span>${this.formatCurrency(remiseMontant)}</span>
-        </div>
-        <div class="totals-row">
-          <span>Sous-total après remise</span>
-          <span>${this.formatCurrency(sousTotalApresRemise)}</span>
-        </div>
         <div class="totals-row final">
           <span>Net à payer:</span>
           <span>${this.formatCurrency(netAPayer)}</span>
@@ -407,13 +399,17 @@ export class PDFService {
     `;
   }
 
-  private generatePaymentConditions(): string {
+  private generatePaymentConditions(conditionsReglement: 'acompte50' | 'acompte70'): string {
+    let text = '';
+    if (conditionsReglement === 'acompte70') {
+      text = `Acompte de 70% à la signature du devis<br>30% à la livraison du site`;
+    } else {
+      text = `Acompte de 50% à la signature du devis<br>30% à la livraison du site (avant mise en ligne)<br>20% solde à la mise en ligne effective`;
+    }
     return `
       <div class="payment-conditions">
         <strong>Conditions de règlement :</strong><br>
-        Acompte de 50% à la signature du devis<br>
-        30% à la livraison du site (avant mise en ligne)<br>
-        20% solde à la mise en ligne effective
+        ${text}
       </div>
     `;
   }
@@ -500,9 +496,15 @@ export class PDFService {
             <div class="document-title">DEVIS N°:${devis.numero}</div>
             ${this.generateClientInfo(devis.clientNom, clientInfo)}
             ${this.generateProductsTable(devis.lignes)}
-            ${this.generateTotalsSection(devis.sousTotal, devis.tva, devis.total, devis.remiseTotale)}
+            ${this.generateTotalsSection(
+      devis.sousTotal,
+      devis.tva,
+      devis.total,
+      devis.remiseTotale,
+      devis.lignes
+    )}
             <div class="net-a-payer">Net à payer en lettres : <span style="font-weight: normal;">${netAPayerLettres}</span></div>
-            ${this.generatePaymentConditions()}
+            ${this.generatePaymentConditions(devis.conditionsReglement)}
             <div class="footer-section">
               <div class="footer-left">
                 ${devis.notes ? `Arrêté la somme de ${devis.notes.toLowerCase()}.` : ''}

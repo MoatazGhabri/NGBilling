@@ -81,7 +81,7 @@ export class DevisController {
         });
       }
 
-      const remiseTotale = devisData.remiseTotale || 0;
+      const remiseTotale = typeof devisData.remiseTotale !== 'undefined' ? Number(devisData.remiseTotale) : 0; // Always coerce to number
       const remiseMontant = sousTotal * (remiseTotale / 100);
       const sousTotalApresRemise = sousTotal - remiseMontant;
       const tva = sousTotalApresRemise * 0.19;
@@ -103,7 +103,8 @@ export class DevisController {
         tva,
         total,
         remiseTotale,
-        lignes: processedLignes
+        lignes: processedLignes,
+        conditionsReglement: devisData.conditionsReglement
       });
 
       await this.devisRepository.save(devis);
@@ -155,7 +156,7 @@ export class DevisController {
           });
         }
 
-        const remiseTotale = updateData.remiseTotale || 0;
+        const remiseTotale = typeof updateData.remiseTotale !== 'undefined' ? Number(updateData.remiseTotale) : 0; // Always coerce to number
         const remiseMontant = sousTotal * (remiseTotale / 100);
         const sousTotalApresRemise = sousTotal - remiseMontant;
         const tva = sousTotalApresRemise * 0.19;
@@ -167,10 +168,18 @@ export class DevisController {
           tva,
           total,
           remiseTotale,
-          lignes: processedLignes
+          lignes: processedLignes,
+          conditionsReglement: updateData.conditionsReglement
         });
       } else {
         Object.assign(devis, updateData);
+        // Always update remiseTotale if present
+        if (typeof updateData.remiseTotale !== 'undefined') {
+          devis.remiseTotale = Number(updateData.remiseTotale);
+        }
+        if (updateData.conditionsReglement) {
+          devis.conditionsReglement = updateData.conditionsReglement;
+        }
       }
 
       await this.devisRepository.save(devis);
