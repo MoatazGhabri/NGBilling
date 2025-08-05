@@ -27,8 +27,23 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
+// CORS configuration
+const allowedOrigins = [
+  process.env.CORS_ORIGIN || 'https://billing.nathy-graph.com',
+  'http://31.97.177.87:5173',
+  'http://localhost:5173',
+
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhostimage.png:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy: Origin ${origin} not allowed`));
+    }
+  },
   credentials: true
 }));
 
