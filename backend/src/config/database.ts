@@ -16,6 +16,29 @@ export const AppDataSource = new DataSource({
   entities: [__dirname + '/../models/*.ts'],
   migrations: [__dirname + '/../migrations/*.ts'],
   subscribers: [__dirname + '/../subscribers/*.ts'],
+  extra: {
+    connectionLimit: 10,
+    acquireTimeout: 60000,
+    timeout: 60000,
+    maxIdle: 10,
+    idleTimeout: 60000,
+    maxPacketSize: 67108864, // 64MB
+    charset: 'utf8mb4',
+    supportBigNumbers: true,
+    bigNumberStrings: true,
+    dateStrings: true,
+    debug: false,
+    trace: false,
+    multipleStatements: false,
+    flags: [
+      '-FOUND_ROWS',
+      '-IGNORE_SPACE',
+      '+MULTI_STATEMENTS'
+    ]
+  },
+  charset: 'utf8mb4',
+  timezone: 'Z',
+  maxQueryExecutionTime: 30000, // 30 seconds
 });
 
 // Initialize database connection

@@ -22,6 +22,7 @@ const factureValidation = [
 router.get('/', authenticateToken, factureController.getAllFactures);
 router.get('/status/:statut', authenticateToken, factureController.getFacturesByStatus);
 router.get('/:id', authenticateToken, factureController.getFactureById);
+router.get('/:id/details', authenticateToken, factureController.getFactureDetails);
 router.post('/', authenticateToken, validate(factureValidation), factureController.createFacture);
 router.put('/:id', authenticateToken, validate(factureValidation), factureController.updateFacture);
 router.delete('/:id', authenticateToken, factureController.deleteFacture);
