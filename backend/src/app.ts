@@ -27,12 +27,10 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
-// CORS configuration
 const allowedOrigins = [
   process.env.CORS_ORIGIN || 'https://billing.nathy-graph.com',
   'http://31.97.177.87:5173',
   'http://localhost:5173',
-
 ];
 
 app.use(cors({
@@ -63,6 +61,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API health check endpoint (for Docker healthcheck)
+app.get(`${apiPrefix}/health`, (req, res) => {
+  res.json({
+    success: true,
+    message: 'NGBilling API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // API routes
 app.use(`${apiPrefix}/auth`, authRoutes);
 app.use(`${apiPrefix}/clients`, clientRoutes);
@@ -79,4 +87,4 @@ app.use(notFound);
 // Error handling middleware
 app.use(errorHandler);
 
-export default app; 
+export default app;

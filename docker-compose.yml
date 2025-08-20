@@ -1,3 +1,6 @@
+# docker‑compose.yml
+version: '3.8'
+
 services:
   # MySQL Database
   mysql:
@@ -14,19 +17,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backend/src/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
+      - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
+    networks:                                                                     
       - ngbilling-network
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --max_allowed_packet=64M
-      --innodb_buffer_pool_size=256M
-      --innodb_log_file_size=64M
-      --innodb_log_buffer_size=16M
-      --query_cache_size=32M
-      --tmp_table_size=64M
-      --max_heap_table_size=64M
+    command: --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "ngbilling", "-pngbilling123"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "ngbilling", "-p", "ngbilling123"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +44,7 @@ services:
       DB_DATABASE: ngbilling
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 3001
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: https://billing.nathy-graph.com
     ports:
       - "3001:3001"
     depends_on:
@@ -65,7 +61,7 @@ services:
       retries: 3
       start_period: 40s
 
-   # Frontend React App (production build)
+  # Frontend React App (production build)
   frontend:
     build:
       context: .
@@ -73,13 +69,15 @@ services:
       args:
         VITE_API_URL: https://api.billing.nathy-graph.com/api/v1
     container_name: ngbilling-frontend
+    restart: unless-stopped
     ports:
       - "5173:80"
     networks:
       - ngbilling-network
+
 volumes:
   mysql_data:
 
 networks:
   ngbilling-network:
-    driver: bridge 
+    driver: bridge

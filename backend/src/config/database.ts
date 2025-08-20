@@ -20,25 +20,14 @@ export const AppDataSource = new DataSource({
     connectionLimit: 10,
     acquireTimeout: 60000,
     timeout: 60000,
-    maxIdle: 10,
-    idleTimeout: 60000,
-    maxPacketSize: 67108864, // 64MB
     charset: 'utf8mb4',
-    supportBigNumbers: true,
-    bigNumberStrings: true,
-    dateStrings: true,
-    debug: false,
-    trace: false,
+    // MySQL specific options
+    max_allowed_packet: 67108864, // 64MB
     multipleStatements: false,
-    flags: [
-      '-FOUND_ROWS',
-      '-IGNORE_SPACE',
-      '+MULTI_STATEMENTS'
-    ]
-  },
-  charset: 'utf8mb4',
-  timezone: 'Z',
-  maxQueryExecutionTime: 30000, // 30 seconds
+    dateStrings: true,
+    supportBigNumbers: true,
+    bigNumberStrings: true
+  }
 });
 
 // Initialize database connection

@@ -1,0 +1,41 @@
+[mysqld]
+# Basic settings
+default-authentication-plugin = mysql_native_password
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# Packet size settings
+max_allowed_packet = 64M
+net_buffer_length = 8192
+max_connections = 200
+
+# InnoDB settings
+innodb_buffer_pool_size = 512M
+innodb_log_file_size = 256M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+
+# Query cache and performance
+query_cache_type = 1
+query_cache_size = 32M
+query_cache_limit = 2M
+
+# Connection and timeout settings
+wait_timeout = 28800
+interactive_timeout = 28800
+connect_timeout = 60
+
+# Logging
+log_error = /var/log/mysql/error.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
+max_allowed_packet = 64M
